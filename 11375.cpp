@@ -1,0 +1,44 @@
+#include <cstdio>
+#include <cstring>
+#include <vector>
+using namespace std;
+
+int N, M, match1[1000], match2[1000];
+vector<int> adj[1000];
+bool visited[1000];
+
+bool DFS(int a){
+	for(int b: adj[a]){
+		if(visited[b]) continue;
+		visited[b] = true;
+		if(match2[b]==-1 || DFS(match2[b])){
+			match1[a] = b;
+			match2[b] = a;
+			return true;
+		}
+	}
+	return false;
+}
+
+int main(){
+	scanf("%d %d", &N, &M);
+	for(int i=0; i<N; i++){
+		int works;
+		scanf("%d", &works);
+		for(int j=0; j<works; j++){
+			int oppo;
+			scanf("%d", &oppo);
+			adj[i].push_back(oppo-1);
+		}
+	}
+	memset(match1, -1, sizeof(match1));
+	memset(match2, -1, sizeof(match2));
+	int result = 0;
+	for(int i=0; i<N; i++){
+		if(match1[i] == -1){
+			memset(visited, 0, sizeof(visited));
+			if(DFS(i)) result++;
+		}
+	}
+	printf("%d\n", result);
+}
