@@ -1,21 +1,23 @@
+// [SegmentTree] + [BinarySearch]
+
 #include <cstdio>
 #include <cstring>
 using namespace std;
-const int MAX = 100000; // NÀÇ ÃÖ´ñ°ª
-const int ST_MAX = 262144; // ¼¼±×¸ÕÆ®Æ®¸® ¹è¿­ÀÇ ÃÖ´ñ°ª
+const int MAX = 100000; // Nì˜ ìµœëŒ“ê°’
+const int ST_MAX = 262144; // ì„¸ê·¸ë¨¼íŠ¸íŠ¸ë¦¬ ë°°ì—´ì˜ ìµœëŒ“ê°’
 
-// ¼¼±×¸ÕÆ® Æ®¸® ±¸Á¶Ã¼
+// ì„¸ê·¸ë¨¼íŠ¸ íŠ¸ë¦¬ êµ¬ì¡°ì²´
 struct SegTree{
 	int size, start;
 	int arr[ST_MAX];
-	// »ı¼ºÀÚ: size=nÀ¸·Î ÃÊ±âÈ­
+	// ìƒì„±ì: size=nìœ¼ë¡œ ì´ˆê¸°í™”
 	SegTree(int n){
 		size = n;
 		start = 1;
 		while(start < size) start *= 2;
 		memset(arr, 0, sizeof(arr));
 	}
-	// i¹ø ¿ø¼Ò¸¦ 1 Áõ°¡½ÃÅ´
+	// ië²ˆ ì›ì†Œë¥¼ 1 ì¦ê°€ì‹œí‚´
 	void inc(int i){
 		i += start;
 		while(i > 0){
@@ -23,7 +25,7 @@ struct SegTree{
 			i /= 2;
 		}
 	}
-	// s ÀÌ»ó e ¹Ì¸¸ ÀÎµ¦½ºÀÇ ¿ø¼Ò ÇÕ ¸®ÅÏ
+	// s ì´ìƒ e ë¯¸ë§Œ ì¸ë±ìŠ¤ì˜ ì›ì†Œ í•© ë¦¬í„´
 	int sum(int s, int e){ return sum(s, e, 1, 0, start); }
 	int sum(int s, int e, int node, int ns, int ne){
 		if(e <= ns || ne <= s) return 0;
@@ -34,38 +36,38 @@ struct SegTree{
 };
 
 int main(){
-	// filled: ÇöÀç±îÁö ¾Ë·ÁÁø, seq¿¡¼­ Ã³À½ µîÀåÇÏ´Â ¾È Ã¤¿öÁø ÀÎµ¦½º
+	// filled: í˜„ì¬ê¹Œì§€ ì•Œë ¤ì§„, seqì—ì„œ ì²˜ìŒ ë“±ì¥í•˜ëŠ” ì•ˆ ì±„ì›Œì§„ ì¸ë±ìŠ¤
 	int N, seq[100000] = {0}, filled = 0;
 	scanf("%d", &N);
 	SegTree ST(N);
 
-	// A[i] ÀÔ·Â¹Ş±â ½ÃÀÛ
+	// A[i] ì…ë ¥ë°›ê¸° ì‹œì‘
 	for(int i=1; i<=N; i++){
 		int A;
 		scanf("%d", &A);
 
-		// A=0ÀÎ °æ¿ì °¡Àå ¾ÕÂÊÀÇ ºó Ä­À» Ã£¾Æ ³ÖÀ½
+		// A=0ì¸ ê²½ìš° ê°€ì¥ ì•ìª½ì˜ ë¹ˆ ì¹¸ì„ ì°¾ì•„ ë„£ìŒ
 		if(A == 0){
 			while(seq[filled] != 0) filled++;
 			seq[filled] = i;
 			ST.inc(filled++);
 		}
-		// A°¡ 0ÀÌ ¾Æ´Ñ °æ¿ì
+		// Aê°€ 0ì´ ì•„ë‹Œ ê²½ìš°
 		else{
-			// ÀÌÁø Å½»ö
+			// ì´ì§„ íƒìƒ‰ìœ¼ë¡œ [0, X]ì˜ ë¹ˆì¹¸ ê°œìˆ˜ê°€ Aê°œì¸ ìµœì†Œì˜ X ì°¾ê¸°
 			int lo = 0, hi = N;
 			while(lo+1 < hi){
 				int mid = (lo+hi)/2;
 				if(mid - ST.sum(0, mid+1) < A) lo = mid;
 				else hi = mid;
 			}
-			// lo°¡ ºÒ°¡´ÉÇÑ °¡Àå Å« ÀÎµ¦½º, hi°¡ °¡´ÉÇÑ °¡Àå ÀÛÀº ÀÎµ¦½º
+			// loê°€ ë¶ˆê°€ëŠ¥í•œ ê°€ì¥ í° ì¸ë±ìŠ¤, hiê°€ ê°€ëŠ¥í•œ ê°€ì¥ ì‘ì€ ì¸ë±ìŠ¤
 			seq[lo+1] = i;
 			ST.inc(lo+1);
 		}
 	}
 
-	// ¼ö¿­ Ãâ·Â
+	// ìˆ˜ì—´ ì¶œë ¥
 	for(int i=0; i<N; i++)
 		printf("%d\n", seq[i]);
 }
