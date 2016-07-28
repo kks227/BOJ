@@ -1,6 +1,5 @@
 #include <cstdio>
 #include <cmath>
-#include <stack>
 #include <algorithm>
 using namespace std;
 
@@ -16,42 +15,31 @@ struct Point{
 	}
 };
 
-long long ccw(const Point& A, const Point& B, const Point& C){
-	return 1LL*(B.x-A.x)*(C.y-A.y) - 1LL*(B.y-A.y)*(C.x-A.x);
-}
-
 int main(){
-	int N;
+	int N, cnt = 0;
 	scanf("%d", &N);
 	Point p[100000];
 	for(int i=0; i<N; i++){
 		int x, y;
-		scanf("%d %d", &x, &y);
-		p[i] = Point(x, y);
+		char c;
+		scanf("%d %d %c", &x, &y, &c);
+		if(c == 'Y') p[cnt++] = Point(x, y);
 	}
+	N = cnt;
+
 	sort(p, p+N);
 	for(int i=1; i<N; i++){
 		p[i].p = p[i].x - p[0].x;
 		p[i].q = p[i].y - p[0].y;
 	}
 	sort(p+1, p+N);
-
-	stack<int> S;
-	S.push(0);
-	S.push(1);
-	int next = 2;
-	while(next < N){
-		while(S.size() >= 2){
-			int first, second;
-			first = S.top();
-			S.pop();
-			second = S.top();
-			if(ccw(p[second], p[first], p[next]) > 0){
-				S.push(first);
-				break;
-			}
-		}
-		S.push(next++);
-	}
-	printf("%d\n", S.size());
+	// 시작점으로 돌아올 때 x좌표가 시작점과 같은 점들의 경우
+	// 본래와 다르게 y좌표가 작아지도록 순서를 바꿔줘야 함
+	int rev;
+	for(rev=N-1; p[rev].x==p[0].x; rev--);
+	rev++;
+	reverse(p+rev, p+N);
+	printf("%d\n", N);
+	for(int i=0; i<N; i++)
+		printf("%d %d\n", p[i].x, p[i].y);
 }
