@@ -14,7 +14,11 @@ int main(){
 		scanf("%d %d", &start, &end);
 		times[i] = intPair(end, start);
 	}
+
+	// 끝나는 시간이 빠른 순으로 정렬
 	sort(times, times+N);
+	
+	// limit: 바로 전 회의가 끝난 시간
 	int result = 0, limit = 0;
 	for(int i=0; i<N; i++){
 		if(times[i].second >= limit){

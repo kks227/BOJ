@@ -9,8 +9,10 @@ int main(){
 		spare += height[i];
 	}
 	sort(height, height+9);
+	// spare: 9명의 키 합에서 100을 뺀 것. 즉 가짜 2명의 키의 합
 	spare -= 100;
 
+	// 가능한 모든 조합을 시도해보며 가짜 쌍을 찾음
 	bool flag = false;
 	for(int i=0; i<9; i++){
 		if(spare < height[i]) continue;
