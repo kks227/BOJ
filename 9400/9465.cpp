@@ -1,18 +1,20 @@
 #include <cstdio>
-#include <cstring>
 #include <algorithm>
 using namespace std;
+const int MAX = 100000;
 
-int N, cost[2][100000], cache[100000][3];
+int N, value[2][MAX], dp[MAX][3];
 
-int maxCost(int pos, int status){
-	if(pos == N) return 0;
-	int &ret = cache[pos][status];
-	if(ret != -1) return ret;
-	ret = maxCost(pos+1, 0);
-	if(status != 1) ret = max(ret, maxCost(pos+1, 1) + cost[1][pos]);
-	if(status != 2) ret = max(ret, maxCost(pos+1, 2) + cost[0][pos]);
-	return ret;
+int sticker(int c, int status){
+	if(c == N) return 0; // base case
+	if(dp[c][status] != -1) return dp[c][status]; // 이미 계산됨
+
+	int result = sticker(c+1, 0);
+	if(status != 1) result = max(result, sticker(c+1, 1) + value[0][c]);
+	if(status != 2) result = max(result, sticker(c+1, 2) + value[1][c]);
+	// dp 배열 갱신
+	dp[c][status] = result;
+	return result;
 }
 
 int main(){
@@ -22,8 +24,12 @@ int main(){
 		scanf("%d", &N);
 		for(int i=0; i<2; i++)
 			for(int j=0; j<N; j++)
-				scanf("%d", &cost[i][j]);
-		memset(cache, -1, sizeof(cache));
-		printf("%d\n", maxCost(0, 0));
+				scanf("%d", &value[i][j]);
+		// dp 배열 초기화
+		for(int i=0; i<N; i++)
+			for(int j=0; j<3; j++)
+				dp[i][j] = -1;
+		// dp로 문제 품
+		printf("%d\n", sticker(0, 0));
 	}
 }

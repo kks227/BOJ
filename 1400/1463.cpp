@@ -1,27 +1,24 @@
-#include <iostream>
-#include <cstring>
+#include <cstdio>
 #include <algorithm>
 using namespace std;
+const int MAX = 1000001;
 
-int cache[1000001];
+int dp[MAX];
 
-int leastOperation(int n){
-	int& ret = cache[n];
-	if(ret != -1) return ret;
-	if(n == 1) return ret=0;
+int f(int n){
+	if(n == 1) return 0; // base case
+	if(dp[n] != -1) return dp[n]; // 이미 계산함
 
-	ret = leastOperation(n-1) + 1;
-	if(n%3 == 0) ret = min(ret, leastOperation(n/3) + 1);
-	if(n%2 == 0) ret = min(ret, leastOperation(n/2) + 1);
-	return ret;
+	int result = f(n-1) + 1;
+	if(n%3 == 0) result = min(result, f(n/3) + 1);
+	if(n%2 == 0) result = min(result, f(n/2) + 1);
+	dp[n] = result;
+	return result;
 }
 
 int main(){
-
 	int N;
-	cin >> N;
-	memset(cache, -1, sizeof(int)*1000001);
-	cout << leastOperation(N) << endl;
-
-	return 0;
+	scanf("%d", &N);
+	fill(dp, dp+MAX, -1);
+	printf("%d\n", f(N));
 }

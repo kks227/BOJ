@@ -1,22 +1,14 @@
-#include <iostream>
+#include <cstdio>
 using namespace std;
-
-#define MOD 15746
+const int MOD = 15746;
 
 int main(){
-
-	int N;
-	cin >> N;
-	int a[3] = {2, 3};
-	if(N <= 3) cout << N << endl;
-	else{
-		for(int i=3; i<N; i++){
-			a[2] = (a[0] + a[1])%MOD;
-			a[0] = a[1];
-			a[1] = a[2];
-		}
-		cout << a[1] << endl;
+	int N, f0=0, f1=1, f2;
+	scanf("%d", &N);
+	for(int i=2; i<=N+1; i++){
+		f2 = (f0 + f1) % MOD;
+		f0 = f1;
+		f1 = f2;
 	}
-
-	return 0;
+	printf("%d\n", f1);
 }
