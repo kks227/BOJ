@@ -1,38 +1,31 @@
-#include <iostream>
-#include <string>
+#include <cstdio>
 #include <algorithm>
 using namespace std;
 
-char possible[15];
-int maxchar;
-int length;
+int L, C;
+char A[15], P[16];
+bool isVowel[26];
 
-void searchByDFS(string fixed, int n, int consonant, int vowel){
-	if(consonant+vowel == length){
-		if(consonant >= 2 && vowel >= 1) cout << fixed << endl;
+void backtrack(int pos, int prev, int consonant, int vowel){
+	// L개의 문자를 다 쓴 경우: 조건에 맞으면 현재 암호 출력하고 리턴
+	if(pos == L){
+		if(consonant >= 2 && vowel >= 1) puts(P);
 		return;
 	}
-	char current_char;
-	int imax = maxchar-length+consonant+vowel;
-	for(int i=n; i<=imax; i++){
-		current_char = possible[i];
-		if(current_char == 'a' || current_char == 'e' || current_char == 'i' || current_char == 'o' || current_char == 'u')
-			searchByDFS(fixed+current_char, i+1, consonant, vowel+1);
-		else
-			searchByDFS(fixed+current_char, i+1, consonant+1, vowel);
+
+	// 아직 사용하지 않은 암호들 하나씩 시도
+	for(int i=prev+1; i<C; i++){
+		P[pos] = A[i];
+		backtrack(pos+1, i, consonant + !isVowel[A[i]-'a'], vowel + isVowel[A[i]-'a']);
+		// P[pos]는 어차피 다시 덮어씌워질 것이므로 안 돌려놔도 됨
 	}
 }
- 
+
 int main(){
-
-	int L, C;
-	cin >> L >> C;
-	length = L;
-	maxchar = C;
+	scanf("%d %d", &L, &C);
 	for(int i=0; i<C; i++)
-		cin >> possible[i];
-	sort(possible, possible+C);
-	searchByDFS("", 0, 0, 0);
-
-    return 0;
+		scanf(" %c", A+i);
+	sort(A, A+C);
+	isVowel[0] = isVowel[4] = isVowel[8] = isVowel[14] = isVowel[20] = true;
+	backtrack(0, -1, 0, 0);
 }

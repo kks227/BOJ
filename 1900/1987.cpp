@@ -1,68 +1,35 @@
-#include <iostream>
+#include <cstdio>
+#include <algorithm>
 using namespace std;
+const int roff[4] = {-1, 1, 0, 0};
+const int coff[4] = {0, 0, -1, 1};
 
-char** map;
-bool alpha[26];
-int R, C;
-int longest;
+int R, C, result;
+char map[20][20];
+bool visited[20][20], used[26];
 
-void DFS_longest(int r, int c, int present_cnt);
-
-int main(){
-	longest = 0;
-	cin >> R >> C;
-	//초기화 및 동적 할당
-	map = new char*[R];
-	for(int i=0; i<R; i++){
-		map[i] = new char[C];
-		for(int j=0; j<C; j++){
-			cin >> map[i][j];
-		}
+void backtrack(int r, int c, int dist){
+	result = max(result, dist);
+	visited[r][c] = true;
+	used[map[r][c]-'A'] = true;
+	for(int d=0; d<4; d++){
+		int nr = r+roff[d];
+		int nc = c+coff[d];
+		if(nr<0 || nr>=R || nc<0 || nc>=C || visited[nr][nc]) continue;
+		if(!used[map[nr][nc]-'A']) backtrack(nr, nc, dist+1);
 	}
-	
-	DFS_longest(0, 0, 1);
-	cout << longest << endl;
-	
-	return 0;
+	// 방문 전의 상황으로 되돌림
+	visited[r][c] = false;
+	used[map[r][c]-'A'] = false;
 }
 
-void DFS_longest(int r, int c, int present_cnt){
-//	cout << "현재 위치: (" << r << ", " << c << ")" << endl;
-	bool LeastOneProgress = false;
-	alpha[ map[r][c] ] = true;
-
-	//위
-	if(r>0){
-		if( alpha[ map[r-1][c] ] == false ){
-			DFS_longest(r-1, c, present_cnt+1);
-			LeastOneProgress = true;
-		}
+int main(){
+	scanf("%d %d", &R, &C);
+	for(int i=0; i<R; i++){
+		getchar();
+		for(int j=0; j<C; j++)
+			map[i][j] = getchar();
 	}
-	//아래
-	if(r<R-1){
-		if( alpha[ map[r+1][c] ] == false ){
-			DFS_longest(r+1, c, present_cnt+1);
-			LeastOneProgress = true;
-		}
-	}
-	//왼쪽
-	if(c>0){
-		if( alpha[ map[r][c-1] ] == false ){
-			DFS_longest(r, c-1, present_cnt+1);
-			LeastOneProgress = true;
-		}
-	}
-	//오른쪽
-	if(c<C-1){
-		if( alpha[ map[r][c+1] ] == false ){
-			DFS_longest(r, c+1, present_cnt+1);
-			LeastOneProgress = true;
-		}
-	}
-
-	alpha[ map[r][c] ] = false;
-	if(LeastOneProgress == false && present_cnt > longest){
-		longest = present_cnt;
-	//	cout << "현재 최단경로: " << longest << endl;
-	}
+	backtrack(0, 0, 1);
+	printf("%d\n", result);
 }
