@@ -1,45 +1,27 @@
-#include <iostream>
 #include <cstdio>
+#include <cstring>
 #include <algorithm>
 using namespace std;
+const int INF = 1000000000;
 
-int cost[1000][3];
-int cache[1000][3];
-int N;
+int N, cost[1000][3], dp[1001][4];
 
-int minPaintCost(int currentHouse, int currentColor){
-	int& ret = cache[currentHouse][currentColor];
+int RGB(int pos, int prev=3){
+	int& ret = dp[pos][prev];
 	if(ret != -1) return ret;
-	if(currentHouse == N-1) return ret = cost[N-1][currentColor];
+	if(pos == N) return ret = 0;
 
-	int cnt = 0;
-	int eachCost[2];
-	for(int i=0; i<3; i++){
-		if(i == currentColor) continue;
-		eachCost[cnt++] = minPaintCost(currentHouse+1, i);
-	}
-	ret = min(eachCost[0], eachCost[1]);
-	ret += cost[currentHouse][currentColor];
+	ret = INF;
+	for(int i=0; i<3; i++)
+		if(prev != i) ret = min(ret, RGB(pos+1, i) + cost[pos][i]);
 	return ret;
 }
 
 int main(){
-
-	cin >> N;
-	for(int i=0; i<N; i++){
-		for(int j=0; j<3; j++){
+	scanf("%d", &N);
+	for(int i=0; i<N; i++)
+		for(int j=0; j<3; j++)
 			scanf("%d", &cost[i][j]);
-			cache[i][j] = -1;
-		}
-	}
-
-	int min, cur;
-	for(int i=0; i<3; i++){
-		cur = minPaintCost(0, i);
-		if(i==0) min = cur;
-		else if(min > cur) min = cur;
-	}
-	cout << min << endl;
-
-	return 0;
+	memset(dp, -1, sizeof(dp));
+	printf("%d\n", RGB(0));
 }
