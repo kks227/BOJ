@@ -6,6 +6,7 @@ int N, M, time[100000];
 bool possible(int maxTime){
 	int sum = 0, limit = M;
 	for(int i=0; i<N; i++){
+		if(time[i] > maxTime) return false;
 		sum += time[i];
 		if(maxTime < sum){
 			if(limit == 1) return false;
