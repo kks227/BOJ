@@ -1,18 +1,19 @@
 #include <cstdio>
-#include <set>
+#include <algorithm>
 using namespace std;
 
 int main(){
-	int N, M, n;
-	multiset<int> cards;
+	int N, M, arr[500000];
 	scanf("%d", &N);
-	for(int i=0; i<N; i++){
-		scanf("%d", &n);
-		cards.insert(n);
-	}
+	for(int i=0; i<N; i++)
+		scanf("%d", arr+i);
+	sort(arr, arr+N);
 	scanf("%d", &M);
 	for(int i=0; i<M; i++){
-		scanf("%d", &n);
-		printf("%d ", cards.count(n));
+		int val, *p, *q;
+		scanf("%d", &val);
+		p = lower_bound(arr, arr+N, val);
+		q = upper_bound(arr, arr+N, val);
+		printf("%d ", q-p);
 	}
 }
