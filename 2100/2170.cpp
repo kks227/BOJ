@@ -1,40 +1,30 @@
 #include <cstdio>
-#include <map>
+#include <utility>
 #include <algorithm>
 using namespace std;
+typedef pair<int, int> P;
+const int INF = 1e9+1;
 
 int main(){
-
-	int N, A, B;
+	int N;
 	scanf("%d", &N);
-	map<int, int> line;
-	map<int, int>::iterator finder1, finder2;
+	P L[1000000];
 	for(int i=0; i<N; i++){
-		scanf("%d %d", &A, &B);
-		if(A>B) swap(A, B);
-		if(A==B) continue;
-
-		if(line.find(A) == line.end() || line[A] < B) line[A] = B;
-		else continue;
-		finder1 = finder2 = line.find(A);
-		finder1++;
-		if(finder1 != line.end() && B >= finder1->first){
-			line[A] = max(B, finder1->second);
-			line.erase(finder1);
-		}
-		if(finder2 != line.begin()){
-			finder1 = finder2;
-			finder2--;
-			if(A <= finder2->second){
-				finder2->second = max(B, finder2->second);
-				line.erase(finder1);
-			}
-		}
+		int s, e;
+		scanf("%d %d", &s, &e);
+		L[i] = P(s, e);
 	}
-	int result = 0;
-	for(finder1=line.begin(); finder1!=line.end(); finder1++)
-		result += finder1->second - finder1->first;
-	printf("%d\n", result);
+	sort(L, L+N);
 
-    return 0;
+	int result = 0, l = -INF, r = -INF;
+	for(int i=0; i<N; i++){
+		if(r < L[i].first){
+			result += r-l;
+			l = L[i].first;
+			r = L[i].second;
+		}
+		else r = max(r, L[i].second);
+	}
+	result += r-l;
+	printf("%d\n", result);
 }
