@@ -4,7 +4,7 @@
 #include <algorithm>
 using namespace std;
 const int MAX_N = 100000;
-const int MAX_C = 4; // 색은 4개면 충분하다. 그래프 이론이 그렇다고 하더라
+const int MAX_C = 10;
 
 int N, dp[MAX_N][MAX_C+1];
 vector<int> adj[MAX_N], child[MAX_N];
