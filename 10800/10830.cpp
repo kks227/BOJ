@@ -30,7 +30,7 @@ int main(){
 	R = matrixPower(A, B);
 	for(int i=0; i<N; i++){
 		for(int j=0; j<N; j++)
-			printf("%d ", R[i*N+j]);
+			printf("%d ", R[i*N+j] % 1000);
 		puts("");
 	}
 }

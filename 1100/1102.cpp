@@ -1,25 +1,22 @@
 #include <cstdio>
-#include <cstring>
 #include <algorithm>
 using namespace std;
+const int INF = 1e9;
+
+int N, P, cnt, cost[16][16], dp[1<<16];
  
-#define INF 1000000000
- 
-int N, P, cnt, cost[16][16];
-int cache[65536];
- 
-int minCost(int bitmask){
-    int &ret = cache[bitmask];
+int plant(int opened){
+    int &ret = dp[opened];
     if(ret != -1) return ret;
     if(cnt >= P) return ret = 0;
  
     ret = INF;
     cnt++;
     for(int i=0; i<N; i++){
-        if(bitmask & (1<<i)){
+        if(opened & (1<<i)){
             for(int j=0; j<N; j++){
-                if( !(bitmask & (1<<j)) )
-                    ret = min(ret, minCost(bitmask | (1<<j)) + cost[i][j]);
+                if( !(opened & (1<<j)) )
+                    ret = min(ret, plant(opened | (1<<j)) + cost[i][j]);
             }
         }
     }
@@ -28,8 +25,7 @@ int minCost(int bitmask){
 }
  
 int main(){
- 
-    int bitmask = 0;
+    int opened = 0;
     char c;
     scanf("%d", &N);
     for(int i=0; i<N; i++)
@@ -40,12 +36,11 @@ int main(){
         c = getchar();
         if(c == 'Y'){
             cnt++;
-            bitmask += (1 << i);
+            opened |= 1<<i;
         }
     }
     scanf("%d", &P);
-    memset(cache, -1, sizeof(int)*65536);
-    printf("%d\n", minCost(bitmask));
- 
-    return 0;
+
+    fill(dp, dp+(1<<16), -1);
+    printf("%d\n", opened ? plant(opened) : -1);
 }
