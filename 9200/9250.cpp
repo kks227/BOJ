@@ -1,16 +1,15 @@
 #include <cstdio>
-#include <cstring>
 #include <queue>
+#include <algorithm>
 using namespace std;
 
 struct Trie{
 	Trie* go[26];
 	Trie *fail;
-	bool terminal;
-
+	bool output;
 	Trie(){
-		memset(go, 0, sizeof(go));
-		terminal = false;
+		fill(go, go+26, nullptr);
+		output = false;
 	}
 	~Trie(){
 		for(int i=0; i<26; i++)
@@ -18,7 +17,7 @@ struct Trie{
 	}
 	void insert(const char* key){
 		if(*key == '\0'){
-			terminal = true;
+			output = true;
 			return;
 		}
 		int next = *key - 'a';
@@ -29,11 +28,19 @@ struct Trie{
 	}
 };
 
-void constructFailFunctions(Trie* root){
+int main(){
+	int N, M;
+	char str[10001];
+	Trie* root = new Trie;
+	scanf("%d", &N);
+	for(int i=0; i<N; i++){
+		scanf("%s", str);
+		root->insert(str);
+	}
+
 	queue<Trie*> Q;
 	root->fail = root;
 	Q.push(root);
-
 	while(!Q.empty()){
 		Trie *current = Q.front();
 		Q.pop();
@@ -49,25 +56,13 @@ void constructFailFunctions(Trie* root){
 				if(dest->go[i]) dest = dest->go[i];
 				next->fail = dest;
 			}
-			if(next->fail->terminal) next->terminal = true;
+			if(next->fail->output) next->output = true;
 			Q.push(next);
 		}
 	}
-}
 
-int main(){
-	int N, Q;
-	char str[10001];
-	Trie* root = new Trie;
-	scanf("%d", &N);
-	for(int i=0; i<N; i++){
-		scanf("%s", str);
-		root->insert(str);
-	}
-	constructFailFunctions(root);
-
-	scanf("%d", &Q);
-	for(int i=0; i<Q; i++){
+	scanf("%d", &M);
+	for(int i=0; i<M; i++){
 		scanf("%s", str);
 		Trie* current = root;
 		bool result = false;
@@ -77,11 +72,12 @@ int main(){
 				current = current->fail;
 			if(current->go[next])
 				current = current->go[next];
-			if(current->terminal){
+			if(current->output){
 				result = true;
 				break;
 			}
 		}
 		puts(result ? "YES" : "NO");
 	}
+	delete root;
 }
