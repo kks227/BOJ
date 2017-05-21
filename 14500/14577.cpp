@@ -1,7 +1,7 @@
 #include <cstdio>
 #include <algorithm>
 #include <set>
-#include <map>
+#include <unordered_map>
 using namespace std;
 const int ST_MAX = 1<<20;
 
@@ -32,7 +32,7 @@ int main(){
 	int N, M, cnt = 0;
 	long long A[100000], B[100000], Q[100000][4], R[300000];
 	set<long long> S;
-	map<long long, int> H;
+	unordered_map<long long, int> H;
 	scanf("%d %d", &N, &M);
 	for(int i=0; i<N; i++){
 		scanf("%lld", A+i);
