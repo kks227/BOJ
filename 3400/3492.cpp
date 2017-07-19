@@ -2,10 +2,10 @@
 #include <cstring>
 #include <algorithm>
 using namespace std;
-const int MAX = 1<<19;
+const int MAX = 1<<15;
 
 char S[MAX];
-int N, d, sa[MAX], pos[MAX], lcp[MAX];
+int N, d, sa[MAX], pos[MAX];
 
 bool cmp(int i, int j){
 	if(pos[i] != pos[j]) return pos[i] < pos[j];
@@ -15,14 +15,13 @@ bool cmp(int i, int j){
 }
 
 void constructSA(){
-	N = strlen(S);
 	for(int i=0; i<N; i++){
 		sa[i] = i;
 		pos[i] = S[i];
 	}
 	for(d=1; ; d*=2){
 		sort(sa, sa+N, cmp);
-		int temp[MAX] = {0};
+		int temp[MAX];
 		for(int i=0; i<N-1; i++)
 			temp[i+1] = temp[i] + cmp(sa[i], sa[i+1]);
 		for(int i=0; i<N; i++)
@@ -32,21 +31,26 @@ void constructSA(){
 	}
 }
 
-void constructLCP(){
-	for(int i=0, k=0; i<N; i++, k=max(k-1, 0)){
-		if(pos[i] == N-1) continue;
-		for(int j=sa[pos[i]+1]; S[i+k]==S[j+k]; k++);
-		lcp[pos[i]] = k;
-	}
-}
-
 int main(){
-	scanf("%s", S);
-	constructSA();
-	constructLCP();
-	for(int i=0; i<N; i++)
-		printf("%d ", sa[i]+1);
-	printf("\nx ");
-	for(int i=0; i<N-1; i++)
-		printf("%d ", lcp[i]);
+	int T;
+	scanf("%d", &T);
+	for(int t=0; t<T; t++){
+		scanf("%s", S);
+		N = strlen(S);
+		copy(S, S+N, S+N);
+		N *= 2;
+		constructSA();
+
+		N /= 2;
+		int result = N;
+		bool range = false;
+		for(int i=0; ; i++){
+			if(sa[i] < N){
+				result = min(result, sa[i]);
+				range = true;
+			}
+			else if(range) break;
+		}
+		printf("%d\n", result+1);
+	}
 }

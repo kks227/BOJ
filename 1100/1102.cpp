@@ -42,5 +42,7 @@ int main(){
     scanf("%d", &P);
 
     fill(dp, dp+(1<<16), -1);
-    printf("%d\n", opened ? plant(opened) : -1);
+    int result = plant(opened);
+    if(result == INF) result = -1;
+    printf("%d\n", result);
 }

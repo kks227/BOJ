@@ -2,7 +2,7 @@
 #include <cstring>
 #include <algorithm>
 using namespace std;
-const int MAX = 1<<19;
+const int MAX = 1<<17;
 
 char S[MAX];
 int N, d, sa[MAX], pos[MAX], lcp[MAX];
@@ -22,7 +22,7 @@ void constructSA(){
 	}
 	for(d=1; ; d*=2){
 		sort(sa, sa+N, cmp);
-		int temp[MAX] = {0};
+		int temp[MAX];
 		for(int i=0; i<N-1; i++)
 			temp[i+1] = temp[i] + cmp(sa[i], sa[i+1]);
 		for(int i=0; i<N; i++)
@@ -41,12 +41,15 @@ void constructLCP(){
 }
 
 int main(){
-	scanf("%s", S);
-	constructSA();
-	constructLCP();
-	for(int i=0; i<N; i++)
-		printf("%d ", sa[i]+1);
-	printf("\nx ");
-	for(int i=0; i<N-1; i++)
-		printf("%d ", lcp[i]);
+	int T;
+	scanf("%d", &T);
+	for(int t=0; t<T; t++){
+		scanf("%s", S);
+		constructSA();
+		constructLCP();
+		int result = lcp[0];
+		for(int i=1; i<N-1; i++)
+			result += max(0, lcp[i]-lcp[i-1]);
+		printf("%d\n", result);
+	}
 }

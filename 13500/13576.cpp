@@ -2,7 +2,7 @@
 #include <cstring>
 #include <algorithm>
 using namespace std;
-const int MAX = 1<<19;
+const int MAX = 1<<17;
 
 char S[MAX];
 int N, d, sa[MAX], pos[MAX], lcp[MAX];
@@ -44,9 +44,22 @@ int main(){
 	scanf("%s", S);
 	constructSA();
 	constructLCP();
-	for(int i=0; i<N; i++)
-		printf("%d ", sa[i]+1);
-	printf("\nx ");
-	for(int i=0; i<N-1; i++)
-		printf("%d ", lcp[i]);
+	int fail[MAX] = {0};
+	for(int i=1, j=0; i<N; i++){
+		while(j > 0 && S[i] != S[j]) j = fail[j-1];
+		if(S[i] == S[j]) fail[i] = ++j;
+	}
+
+	int len[MAX], start[MAX], end[MAX], i, k = 0;
+	for(int i=N-1; i>=0; i=fail[i]-1) len[k++] = i+1;
+	int K = k;
+	for(i=0; S[sa[i]] != S[0]; i++);
+	for(; ; i++){
+		if(k > 0 && lcp[i] == len[k-1]) start[--k] = i;
+		while(k < K && lcp[i] < len[k]) end[k++] = i;
+		if(lcp[i] == 0) break;
+	}
+	printf("%d\n", K);
+	for(int i=K-1; i>=0; i--)
+		printf("%d %d\n", len[i], end[i]-start[i]+1);
 }

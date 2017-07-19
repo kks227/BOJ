@@ -1,54 +1,49 @@
 #include <cstdio>
-#include <vector>
+#include <algorithm>
 using namespace std;
-const int MOD = 100003;
-const int P = 2;
+const int MAX = 1<<18;
 
-inline int mod(long long n){
-	if(n >= 0) return n % MOD;
-	return ((-n/MOD+1)*MOD + n) % MOD;
+char S[MAX];
+int N, d, sa[MAX], pos[MAX], lcp[MAX];
+
+bool cmp(int i, int j){
+	if(pos[i] != pos[j]) return pos[i] < pos[j];
+	i += d;
+	j += d;
+	return (i < N && j < N) ? (pos[i] < pos[j]) : (i > j);
+}
+
+void constructSA(){
+	for(int i=0; i<N; i++){
+		sa[i] = i;
+		pos[i] = S[i];
+	}
+	for(d=1; ; d*=2){
+		sort(sa, sa+N, cmp);
+		int temp[MAX];
+		for(int i=0; i<N-1; i++)
+			temp[i+1] = temp[i] + cmp(sa[i], sa[i+1]);
+		for(int i=0; i<N; i++)
+			pos[sa[i]] = temp[i];
+
+		if(temp[N-1] == N-1) break;
+	}
+}
+
+void constructLCP(){
+	for(int i=0, k=0; i<N; i++, k=max(k-1, 0)){
+		if(pos[i] == N-1) continue;
+		for(int j=sa[pos[i]+1]; S[i+k]==S[j+k]; k++);
+		lcp[pos[i]] = k;
+	}
 }
 
 int main(){
-	int L;
-	char W[200001];
-	scanf("%d %s", &L, W);
-
-	int lo = 0, hi = L;
-	while(lo+1 < hi){
-		int mid = (lo+hi)/2;
-
-		int H = 0, power = 1;
-		vector<int> pos[MOD];
-		bool found = false;
-		for(int i=0; i<=L-mid; i++){
-			if(i == 0){
-				for(int j=0; j<mid; j++){
-					H = mod(H + 1LL*W[mid-1-j]*power);
-					if(j < mid-1) power = mod(1LL*power*P);
-				}
-			}
-			else H = mod(P*(H - 1LL*W[i-1]*power) + W[i+mid-1]);
-
-			if(!pos[H].empty()){
-				for(int p: pos[H]){
-					bool same = true;
-					for(int j=0; j<mid; j++){
-						if(W[i+j] != W[p+j]){
-							same = false;
-							break;
-						}
-					}
-					if(same){
-						found = true;
-						break;
-					}
-				}
-			}
-			if(found) break;
-			else pos[H].push_back(i);
-		}
-		(found ? lo : hi) = mid;
-	}
-	printf("%d\n", lo);
+	scanf("%d %s", &N, S);
+	constructSA();
+	constructLCP();
+	int result = 0;
+	for(int i=0; i<N-1; i++)
+		result = max(result, lcp[i]);
+	printf("%d\n", result);
 }

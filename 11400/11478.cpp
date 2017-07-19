@@ -2,10 +2,11 @@
 #include <cstring>
 #include <algorithm>
 using namespace std;
-const int MAX = 1<<19;
+const int MAX = 1<<10;
 
 char S[MAX];
 int N, d, sa[MAX], pos[MAX], lcp[MAX];
+
 
 bool cmp(int i, int j){
 	if(pos[i] != pos[j]) return pos[i] < pos[j];
@@ -22,7 +23,7 @@ void constructSA(){
 	}
 	for(d=1; ; d*=2){
 		sort(sa, sa+N, cmp);
-		int temp[MAX] = {0};
+		int temp[MAX];
 		for(int i=0; i<N-1; i++)
 			temp[i+1] = temp[i] + cmp(sa[i], sa[i+1]);
 		for(int i=0; i<N; i++)
@@ -44,9 +45,8 @@ int main(){
 	scanf("%s", S);
 	constructSA();
 	constructLCP();
-	for(int i=0; i<N; i++)
-		printf("%d ", sa[i]+1);
-	printf("\nx ");
+	long long result = N-sa[N-1];
 	for(int i=0; i<N-1; i++)
-		printf("%d ", lcp[i]);
+		result += N-sa[i] - lcp[i];
+	printf("%lld\n", result);
 }
