@@ -1,7 +1,6 @@
 #include <cstdio>
-#include <fstream>
-#include <string>
 #include <climits>
+#include <cmath>
 #include <vector>
 #include <utility>
 #include <algorithm>
@@ -27,10 +26,9 @@ int closestPair(int l, int r){
 	}
 
 	int mid = (l+r)/2, xp = p[mid-1].first;
-	int d = min(closestPair(l, mid), closestPair(mid, r));
-	int result = d;
-	P *lp = lower_bound(p+l, p+r, P(xp-d, -INF)), *rp = upper_bound(p+l, p+r, P(xp+d, INF));
-	int S = copy(lp, rp, q) - q;
+	int d = min(closestPair(l, mid), closestPair(mid, r)), result = d;
+	double sd = sqrt(d);
+	int S = copy(lower_bound(p+l, p+r, P(ceil(xp-sd), -INF)), upper_bound(p+l, p+r, P(floor(xp+sd), INF)), q) - q;
 	sort(q, q+S, [](P &a, P &b){
 		if(a.second != b.second) return a.second < b.second;
 		return a.first < b.first;
@@ -44,7 +42,7 @@ int closestPair(int l, int r){
 int main(){
 	scanf("%d", &N);
 	for(int i=0; i<N; i++)
-		scanf("%d %d", &p[i].first, &p[i].second);
+		scanf("%d %d", &p[i].second, &p[i].first);
 	sort(p, p+N);
 	printf("%d\n", closestPair(0, N));
 }
