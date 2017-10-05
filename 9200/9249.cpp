@@ -43,6 +43,7 @@ void constructLCP(){
 int main(){
 	scanf("%s", S);
 	int A = strlen(S);
+	S[A++] = '$';
 	scanf("%s", S+A);
 	constructSA();
 	constructLCP();
@@ -50,7 +51,7 @@ int main(){
 	int result = 0, pos = 0, B = N - A;
 	for(int i=0; i<N-1; i++){
 		if((sa[i] >= A) != (sa[i+1] >= A)){
-			int temp = min(lcp[i], A - min(sa[i], sa[i+1]));
+			int temp = min(lcp[i], A-1 - min(sa[i], sa[i+1]));
 			if(temp > result){
 				result = temp;
 				pos = sa[i];
