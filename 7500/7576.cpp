@@ -1,69 +1,34 @@
-#include <iostream>
+#include <cstdio>
 #include <queue>
 using namespace std;
-
-int riped;
-int riped_this_time;
-int map[1002][1002];
-queue<int> Node;
-
-void BFS(int p, int q, int t, bool sub){
-	if(sub){
-		if(map[p][q] == 0){
-			map[p][q] = t+2;
-			riped_this_time++;
-			riped++;
-			Node.push(p*1000 + q);
-		}
-		return;
-	}
-    BFS(p-1, q, t, true);
-    BFS(p, q-1, t, true);
-    BFS(p, q+1, t, true);
-    BFS(p+1, q, t, true);
-}
+const int roff[4] = {-1, 1, 0, 0};
+const int coff[4] = {0, 0, -1, 1};
 
 int main(){
-
-	int M, N, tomato=0;
-	cin >> M >> N;
-	for(int i=1; i<=N; i++){
-		for(int j=1; j<=M; j++){
-			cin >> map[i][j];
-			if(map[i][j] == 1){
-				riped++;
-				tomato++;
-				Node.push(i*1000 + j);
-			}
-			if(map[i][j] == 0) tomato++;
+	int R, C, map[1000][1000], cnt = 0, result = 0;
+	scanf("%d %d", &C, &R);
+	queue<int> Q;
+	for(int i=0; i<R; i++){
+		for(int j=0; j<C; j++){
+			scanf("%d", &map[i][j]);
+			if(map[i][j] >= 0) cnt++;
+			if(map[i][j] == 1) Q.push(i*1000 + j);
 		}
 	}
-	for(int i=0; i<=N+1; i++)
-		map[i][0] = map[i][M+1] = -1;
-	for(int j=0; j<=M+1; j++)
-		map[0][j] = map[N+1][j] = -1;
 
-	int t = 0, present_queue_size, current_dest;
-	int p, q;
-	if(riped < tomato){
-		while(riped < tomato){
-			riped_this_time = 0;
-			present_queue_size = Node.size();
-			for(int i=0; i<present_queue_size; i++){
-				current_dest = Node.front();
-				Node.pop();
-				p = current_dest/1000;
-				q = current_dest%1000;
-				if(q==0) q = 1000;
-				BFS(p, q, t, false);
+	for(; !Q.empty(); result++){
+		int qSize = Q.size();
+		for(int i=0; i<qSize; i++){
+			int r = Q.front()/1000, c = Q.front()%1000; Q.pop();
+			cnt--;
+			for(int d=0; d<4; d++){
+				int nr = r+roff[d], nc = c+coff[d];
+				if(nr < 0 || nr >= R || nc < 0 || nc >= C || map[nr][nc] != 0) continue;
+				map[nr][nc] = 1;
+				Q.push(nr*1000 + nc);
 			}
-			if(riped_this_time == 0) break;
-			t++;
 		}
-		if(riped_this_time == 0) cout << -1 << endl;
-		else cout << t << endl;
+		if(cnt == 0) break;
 	}
-	else cout << 0 << endl;
-
-	return 0;
+	printf("%d\n", cnt ? -1 : result);
 }
