@@ -1,34 +1,52 @@
 #include <cstdio>
 #include <cstring>
+#include <utility>
 #include <algorithm>
 using namespace std;
+typedef pair<int, int> P;
 const int MAX = 1<<19;
 
 char S[MAX];
-int N, d, sa[MAX], pos[MAX], lcp[MAX];
+int N, sa[MAX], pos[MAX], lcp[MAX];
 
-bool cmp(int i, int j){
-	if(pos[i] != pos[j]) return pos[i] < pos[j];
-	i += d;
-	j += d;
-	return (i < N && j < N) ? (pos[i] < pos[j]) : (i > j);
-}
+struct SuffixNode{
+	int sa;
+	P rank;
+	bool operator <(const SuffixNode &O)const{ return rank < O.rank; }
+};
 
 void constructSA(){
 	N = strlen(S);
+	SuffixNode node[MAX];
 	for(int i=0; i<N; i++){
-		sa[i] = i;
-		pos[i] = S[i];
+		node[i].sa = i;
+		node[i].rank = P(S[i]-'a', i<N-1 ? S[i+1]-'a' : -1);
 	}
-	for(d=1; ; d*=2){
-		sort(sa, sa+N, cmp);
-		int temp[MAX] = {0};
-		for(int i=0; i<N-1; i++)
-			temp[i+1] = temp[i] + cmp(sa[i], sa[i+1]);
-		for(int i=0; i<N; i++)
-			pos[sa[i]] = temp[i];
+	sort(node, node+N);
 
-		if(temp[N-1] == N-1) break;
+	for(int d=2; d<N; d*=2){
+		int cnt = 0, temp = node[0].rank.first;
+		node[0].rank.first = pos[node[0].sa] = 0;
+
+		for(int i=1; i<N; i++){
+			if(P(temp, node[i-1].rank.second) == node[i].rank) node[i].rank.first = cnt;
+			else{
+				temp = node[i].rank.first;
+				node[i].rank.first = ++cnt;
+			}
+			pos[node[i].sa] = i;
+		}
+
+		for(int i=0; i<N; i++){
+			int j = node[i].sa + d;
+			node[i].rank.second = (j < N ? node[pos[j]].rank.first : -1);
+		}
+		sort(node, node+N);
+	}
+
+	for(int i=0; i<N; i++){
+		sa[i] = node[i].sa;
+		pos[sa[i]] = i;
 	}
 }
 
