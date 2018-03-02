@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cstring>
+#include <vector>
 #include <utility>
 #include <algorithm>
 using namespace std;
@@ -17,7 +18,7 @@ struct SuffixNode{
 
 void constructSA(){
 	N = strlen(S);
-	SuffixNode node[MAX];
+	SuffixNode node[MAX], nodeTemp[MAX];
 	for(int i=0; i<N; i++){
 		node[i].sa = i;
 		node[i].rank = P(S[i]-'a', i<N-1 ? S[i+1]-'a' : -1);
@@ -25,23 +26,37 @@ void constructSA(){
 	sort(node, node+N);
 
 	for(int d=2; d<N; d*=2){
-		int cnt = 0, temp = node[0].rank.first;
+		int M = 0, temp = node[0].rank.first;
 		node[0].rank.first = pos[node[0].sa] = 0;
 
 		for(int i=1; i<N; i++){
-			if(P(temp, node[i-1].rank.second) == node[i].rank) node[i].rank.first = cnt;
+			if(P(temp, node[i-1].rank.second) == node[i].rank) node[i].rank.first = M;
 			else{
 				temp = node[i].rank.first;
-				node[i].rank.first = ++cnt;
+				node[i].rank.first = ++M;
 			}
 			pos[node[i].sa] = i;
 		}
+		M++;
 
+		int cnt[MAX+1] = {0};
 		for(int i=0; i<N; i++){
 			int j = node[i].sa + d;
 			node[i].rank.second = (j < N ? node[pos[j]].rank.first : -1);
+			cnt[node[i].rank.second+1]++;
 		}
-		sort(node, node+N);
+		for(int i=1; i<M+1; i++)
+			cnt[i] += cnt[i-1];
+		for(int i=N-1; i>=0; i--)
+			nodeTemp[--cnt[node[i].rank.second+1]] = node[i];
+
+		fill(cnt, cnt+M+1, 0);
+		for(int i=0; i<N; i++)
+			cnt[nodeTemp[i].rank.first]++;
+		for(int i=1; i<M; i++)
+			cnt[i] += cnt[i-1];
+		for(int i=N-1; i>=0; i--)
+			node[--cnt[nodeTemp[i].rank.first]] = nodeTemp[i];
 	}
 
 	for(int i=0; i<N; i++){
