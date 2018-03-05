@@ -5,7 +5,8 @@
 #include <algorithm>
 using namespace std;
 typedef pair<int, int> P;
-const int MAX = 1<<19;
+const int MAX = 1<<20;
+const int INF = 1e9;
 
 struct SuffixNode{
 	int sa;
@@ -14,15 +15,14 @@ struct SuffixNode{
 };
 
 struct SuffixArray{
-	char S[MAX];
+	char S[MAX+1];
 	int N, sa[MAX], pos[MAX], lcp[MAX];
 
 	void constructSA(){
-		N = strlen(S);
 		SuffixNode node[MAX], nodeTemp[MAX];
 		for(int i=0; i<N; i++){
 			node[i].sa = i;
-			node[i].rank = P(S[i]-'a', i<N-1 ? S[i+1]-'a' : -1);
+			node[i].rank = P(S[i], i<N-1 ? S[i+1] : -1);
 		}
 		sort(node, node+N);
 
@@ -77,12 +77,28 @@ struct SuffixArray{
 
 int main(){
 	SuffixArray SA;
-	scanf("%s", SA.S);
+	scanf("%s", &SA.S);
+	int N = SA.N = strlen(SA.S);
+	reverse(SA.S, SA.S+N);
 	SA.constructSA();
 	SA.constructLCP();
-	for(int i=0; i<SA.N; i++)
-		printf("%d ", SA.sa[i]+1);
-	printf("\nx ");
-	for(int i=0; i<SA.N-1; i++)
-		printf("%d ", SA.lcp[i]);
+
+	int result[MAX] = {0}, X = SA.pos[0], temp = SA.lcp[X], M;
+	result[X] = N;
+	for(int i=X+1; i<N; i++){
+		result[i] = temp;
+		temp = min(temp, SA.lcp[i]);
+	}
+	temp = INF;
+	for(int i=X-1; i>=0; i--){
+		temp = min(temp, SA.lcp[i]);
+		result[i] = temp;
+	}
+
+	scanf("%d", &M);
+	for(int i=0; i<M; i++){
+		int q;
+		scanf("%d", &q);
+		printf("%d\n", result[SA.pos[N-q]]);
+	}
 }

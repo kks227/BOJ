@@ -5,7 +5,9 @@
 #include <algorithm>
 using namespace std;
 typedef pair<int, int> P;
-const int MAX = 1<<19;
+const int MAX = 1<<15;
+const int MAX_VAL = 1000001;
+const int INF = 1e9;
 
 struct SuffixNode{
 	int sa;
@@ -14,15 +16,13 @@ struct SuffixNode{
 };
 
 struct SuffixArray{
-	char S[MAX];
-	int N, sa[MAX], pos[MAX], lcp[MAX];
+	int S[MAX], N, sa[MAX], pos[MAX], lcp[MAX];
 
 	void constructSA(){
-		N = strlen(S);
 		SuffixNode node[MAX], nodeTemp[MAX];
 		for(int i=0; i<N; i++){
 			node[i].sa = i;
-			node[i].rank = P(S[i]-'a', i<N-1 ? S[i+1]-'a' : -1);
+			node[i].rank = P(S[i], i<N-1 ? S[i+1] : -1);
 		}
 		sort(node, node+N);
 
@@ -40,7 +40,7 @@ struct SuffixArray{
 			}
 			M++;
 
-			int cnt[MAX+1] = {0};
+			int cnt[MAX_VAL+1] = {0};
 			for(int i=0; i<N; i++){
 				int j = node[i].sa + d;
 				node[i].rank.second = (j < N ? node[pos[j]].rank.first : -1);
@@ -75,14 +75,37 @@ struct SuffixArray{
 	}
 };
 
+struct SegTree{
+	int arr[MAX*2];
+	SegTree(){ fill(arr, arr+MAX*2, INF); }
+	void construct(){
+		for(int i=MAX-1; i>0; i--)
+			arr[i] = min(arr[i*2], arr[i*2+1]);
+	}
+	int getMin(int s, int e){ return getMin(s, e, 1, 0, MAX); }
+	int getMin(int s, int e, int node, int ns, int ne){
+		if(e <= ns || ne <= s) return INF;
+		if(s <= ns && ne <= e) return arr[node];
+		int mid = (ns+ne)/2;
+		return min(getMin(s, e, node*2, ns, mid), getMin(s, e, node*2+1, mid, ne));
+	}
+};
+
 int main(){
+	int N, K;
 	SuffixArray SA;
-	scanf("%s", SA.S);
+	scanf("%d %d", &N, &K);
+	SA.N = N;
+	for(int i=0; i<N; i++)
+		scanf("%d", SA.S+i);
 	SA.constructSA();
 	SA.constructLCP();
-	for(int i=0; i<SA.N; i++)
-		printf("%d ", SA.sa[i]+1);
-	printf("\nx ");
-	for(int i=0; i<SA.N-1; i++)
-		printf("%d ", SA.lcp[i]);
+
+	SegTree ST;
+	copy(SA.lcp, SA.lcp+N-1, ST.arr+MAX);
+	ST.construct();
+	int result = 0;
+	for(int i=0; i+K-1<N; i++)
+		result = max(result, ST.getMin(i, i+K-1));
+	printf("%d\n", result);
 }
