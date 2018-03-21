@@ -1,14 +1,17 @@
 #include <cstdio>
-#include <cmath>
 using namespace std;
 
 int main(){
-	int N;
-	scanf("%d", &N);
-	for(int i=0; i<N; i++){
+	int T;
+	scanf("%d", &T);
+	for(int t=0; t<T; t++){
 		long long X;
 		scanf("%lld", &X);
-		double S = sqrt(X);
-		printf("%d ", S == (int)S);
+		long long lo = 0, hi = 1e9;
+		while(lo+1 < hi){
+			long long mid = (lo+hi)/2;
+			(mid*mid < X ? lo : hi) = mid;
+		}
+		printf("%d ", hi*hi == X);
 	}
 }
