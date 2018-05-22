@@ -4,88 +4,51 @@ using namespace std;
 
 #define MODULA 100000LL
 
-int N;
+int N, dp[201][201];
 char S[201];
-long long cache[201][201];
-bool overLimit;
+bool over[201][201], zero[201][201];
+const int MOD = 100000;
 
-long long countCorrect(int start, int end){
-	long long &ret = cache[start][end];
+int paren(int start, int end){
+	int &ret = dp[start][end];
 	if(ret != -1) return ret;
 	if(start == end) return ret = 1;
-	if((end-start)%2) return ret = 0;
+	if((end-start)%2){
+		zero[start][end] = true;
+		return ret = 0;
+	}
 
 	ret = 0;
-	long long temp;
-	if(S[start] == '('){
-		for(int i=start+1; i<end; i+=2){
-			if(S[i] == ')' || S[i] == '?'){
-				temp = countCorrect(start+1, i) * countCorrect(i+1, end);
-				if(temp >= MODULA){
-					overLimit = true;
-					temp %= MODULA;
-				}
-				ret += temp;
-			}
+	for(int i=start+1; i<end; i+=2){
+		int c = 0;
+		if(S[start] == '('){
+			if(S[i] == ')' || S[i] == '?') c = 1;
 		}
-	}
-	else if(S[start] == '{'){
-		for(int i=start+1; i<end; i+=2){
-			if(S[i] == '}' || S[i] == '?'){
-				temp = countCorrect(start+1, i) * countCorrect(i+1, end);
-				if(temp >= MODULA){
-					overLimit = true;
-					temp %= MODULA;
-				}
-				ret += temp;
-			}
+		else if(S[start] == '{'){
+			if(S[i] == '}' || S[i] == '?') c = 1;
 		}
-	}
-	else if(S[start] == '['){
-		for(int i=start+1; i<end; i+=2){
-			if(S[i] == ']' || S[i] == '?'){
-				temp = countCorrect(start+1, i) * countCorrect(i+1, end);
-				if(temp >= MODULA){
-					overLimit = true;
-					temp %= MODULA;
-				}
-				ret += temp;
-			}
+		else if(S[start] == '['){
+			if(S[i] == ']' || S[i] == '?') c = 1;
 		}
-	}
-	else if(S[start] == '?'){
-		for(int i=start+1; i<end; i+=2){
-			if(S[i] == '?'){
-				temp = 3 * countCorrect(start+1, i) * countCorrect(i+1, end);
-				if(temp >= MODULA){
-					overLimit = true;
-					temp %= MODULA;
-				}
-				ret += temp;
-			}
-			else if(S[i] == ')' || S[i] == '}' || S[i] == ']'){
-				temp = countCorrect(start+1, i) * countCorrect(i+1, end);
-				if(temp >= MODULA){
-					overLimit = true;
-					temp %= MODULA;
-				}
-				ret += temp;
-			}
+		else if(S[start] == '?'){
+			if(S[i] == ')' || S[i] == '}' || S[i] == ']') c = 1;
+			else if(S[i] == '?') c = 3;
 		}
-	}
-	//else: ) } ]
+		//else: ) } ]
 
-	return (ret %= MODULA);
+		if(c > 0){
+			ret += 1LL * c * paren(start+1, i) * paren(i+1, end) % MOD;
+			if( (over[start+1][i] || over[i+1][end]) && !zero[start+1][i] && !zero[i+1][end] ) over[start][end] = true;
+		}
+	}
+	if(ret >= MOD) over[start][end] = true;
+	if(!over[start][end] && ret == 0) zero[start][end] = true;
+	return ret %= MOD;
 }
 
 int main(){
-
 	scanf("%d %s", &N, S);
-	long long result;
-	overLimit = false;
-	memset(cache, -1, sizeof(long long) * 201 * 201);
-	result = countCorrect(0, N);
-	printf(overLimit?"%05lld\n":"%lld\n", result);
-
-	return 0;
+	memset(dp, -1, sizeof(dp));
+	int result = paren(0, N);
+	printf(over[0][N]?"%05d\n":"%d\n", result);
 }
