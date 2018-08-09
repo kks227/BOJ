@@ -5,8 +5,8 @@
 #include <functional>
 #include <algorithm>
 using namespace std;
-typedef pair<int, int> P;
-const int INF = 1000000000;
+typedef pair<long long, long long> P;
+const long long INF = 1e18;
 
 int main(){
 	int N, M, K;
@@ -21,7 +21,7 @@ int main(){
 	}
 
 	bool visited[21][10000] = {0};
-	int dist[21][10000];
+	long long dist[21][10000];
 	for(int i=0; i<=20; i++)
 		fill(dist[i], dist[i]+N, INF);
 	dist[K][0] = 0;
@@ -41,7 +41,7 @@ int main(){
 
 		for(auto &p: adj[curr]){
 			int next = p.first;
-			int d = p.second;
+			long long d = p.second;
 			if(dist[k][next] > dist[k][curr] + d){
 				dist[k][next] = dist[k][curr] + d;
 				PQ.push(P(dist[k][next], k*10000 + next));
@@ -53,8 +53,8 @@ int main(){
 		}
 	}
 
-	int result = INF;
+	long long result = INF;
 	for(int i=0; i<=K; i++)
 		result = min(result, dist[i][N-1]);
-	printf("%d\n", result);
+	printf("%lld\n", result);
 }
