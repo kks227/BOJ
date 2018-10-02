@@ -54,7 +54,7 @@ int main(){
 	int result = 0;
 	priority_queue<RectTuple, vector<RectTuple>, greater<RectTuple>> PQ;
 	for(int i=0, j=0; i<=100000 && j<N; i++){
-		while(R[j].x1 < i) j++;
+		while(j < N && R[j].x1 < i) j++;
 		if(j == N) break;
 		for(; j<N && R[j].x1 == i; j++){
 			int temp = ST.getMax(0, R[j].y1) + 1;
