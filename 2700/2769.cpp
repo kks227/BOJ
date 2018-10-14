@@ -3,7 +3,7 @@
 #include <stack>
 #include <unordered_map>
 using namespace std;
-const int MAX = 1000000;
+const int MAX = 1000;
 
 int N;
 char I[MAX], P[2][MAX], PL[2];
