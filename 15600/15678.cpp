@@ -2,16 +2,14 @@
 #include <deque>
 #include <algorithm>
 using namespace std;
-const int INF = 1e9;
+const long long INF = 1e18;
 
 int main(){
-	int N, D, A[100000], maxVal = -INF;
+	int N, D, A[100000];
 	scanf("%d %d", &N, &D);
-	for(int i=0; i<N; i++){
+	for(int i=0; i<N; i++)
 		scanf("%d", A+i);
-		maxVal = max(A[i], maxVal);
-	}
-	long long dp[100000], result = maxVal;
+	long long dp[100000], result = -INF;
 	fill(dp, dp+N, -INF);
 	deque<int> DQ;
 	for(int i=0; i<N; i++){
