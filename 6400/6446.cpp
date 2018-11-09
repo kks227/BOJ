@@ -17,7 +17,7 @@ struct Node{
 	char op;
 	NodeType type;
 	Node(): Node(0){}
-	Node(NodeType type1, int val1): type(type1), val(val1){}
+	explicit Node(int val1): type(Literal), val(val1){}
 	Node(string var1): type(Variable), var(var1){}
 	Node(char op1): type(Operator), op(op1){}
 };
@@ -143,7 +143,7 @@ int main(){
 						else break;
 						++pos;
 					}
-					P.push_back( Node(Literal, stoi(lit)) );
+					P.push_back(Node(stoi(lit)));
 					recentVal = true;
 				}
 				else{ // variable
