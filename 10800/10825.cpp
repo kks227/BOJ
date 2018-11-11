@@ -18,5 +18,5 @@ int main(){
 	}
 	sort(s, s+N);
 	for(int i=0; i<N; i++)
-		cout << get<3>(s[i]) << endl;
+		cout << get<3>(s[i]) << '\n';
 }
