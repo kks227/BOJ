@@ -22,6 +22,10 @@ int main(){
 				in[W[i+1][j]-'a']++;
 				break;
 			}
+			if(W[i][j+1] && !W[i+1][j+1]){
+				puts("!");
+				return 0;
+			}
 		}
 	}
 
