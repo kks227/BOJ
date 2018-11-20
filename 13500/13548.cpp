@@ -1,61 +1,66 @@
 #include <cstdio>
 #include <cmath>
-#include <tuple>
 #include <algorithm>
 using namespace std;
-const int ST_MAX = 1<<17;
-typedef tuple<int, int, int, int> Query; // L/sqrt(N), R, L, q_n
+const int MAX = 100000;
 
-struct SegTree{
-	int arr[ST_MAX*2];
-	SegTree(){ fill(arr, arr+ST_MAX*2, 0); }
-	void update(int n, int k){
-		n += ST_MAX;
-		arr[n] += k;
-		while(n > 1){
-			n /= 2;
-			arr[n] = max(arr[n*2], arr[n*2+1]);
-		}
-	}
-	int getMax(){ return getMax(0, ST_MAX, 1, 0, ST_MAX); }
-	int getMax(int s, int e, int node, int ns, int ne){
-		if(e <= ns || ne <= s) return 0;
-		if(s <= ns && ne <= e) return arr[node];
-		int mid = (ns+ne)/2;
-		return max(getMax(s, e, node*2, ns, mid), getMax(s, e, node*2+1, mid, ne));
-	}
+int sqrtN;
+
+struct QueryNode{
+    int s, e, n;
+    QueryNode(): QueryNode(0, 0, -1){}
+    QueryNode(int s1, int e1, int n1): s(s1), e(e1), n(n1){}
+    bool operator <(const QueryNode &O)const{
+        if(s/sqrtN != O.s/sqrtN) return (s/sqrtN < O.s/sqrtN);
+        return (e < O.e);
+    }
 };
 
 int main(){
-	int N, M, A[100000], result[100000];
-	Query Q[100000];
-	scanf("%d", &N);
-	for(int i=0; i<N; i++)
-		scanf("%d", A+i);
-	scanf("%d", &M);
-	double sqrtN = sqrt(N);
-	for(int i=0; i<M; i++){
-		int l, r;
-		scanf("%d %d", &l, &r);
-		l--; r--;
-		Q[i] = Query(l/sqrtN, r, l, i);
-	}
-	sort(Q, Q+M);
+    int N, M, A[MAX];
+    scanf("%d", &N);
+    for(int i = 0; i < N; ++i)
+        scanf("%d", A+i);
+    sqrtN = sqrt(N);
 
-	SegTree ST;
-	int l = get<2>(Q[0]), r = get<1>(Q[0]);
-	for(int i=l; i<=r; i++)
-		ST.update(A[i], 1);
-	result[get<3>(Q[0])] = ST.getMax();
-	for(int i=1; i<M; i++){
-		int nl, nr, qi, dummy;
-		tie(dummy, nr, nl, qi) = Q[i];
-		while(nl < l) ST.update(A[--l], 1);
-		while(r < nr) ST.update(A[++r], 1);
-		while(nl > l) ST.update(A[l++], -1);
-		while(r > nr) ST.update(A[r--], -1);
-		result[qi] = ST.getMax();
-	}
-	for(int i=0; i<M; i++)
-		printf("%d\n", result[i]);
+    QueryNode Q[MAX];
+    scanf("%d", &M);
+    for(int i = 0; i < M; ++i){
+        int l, r;
+        scanf("%d %d", &l, &r);
+        Q[i] = QueryNode(l-1, r, i);
+    }
+    sort(Q, Q+M);
+
+    int mcnt = 0, cnt[MAX+1] = {0,}, rcnt[MAX+1] = {0,}, result[MAX];
+    int s = Q[0].s, e = Q[0].e;
+    for(int i = s; i < e; ++i){
+        int temp = ++cnt[A[i]];
+        ++rcnt[temp];
+        if(temp > mcnt) ++mcnt;
+    }
+    result[Q[0].n] = mcnt;
+    for(int i = 1; i < M; ++i){
+        while(Q[i].s < s){
+            int temp = ++cnt[A[--s]];
+            ++rcnt[temp];
+            if(temp > mcnt) ++mcnt;
+        }
+        while(e < Q[i].e){
+            int temp = ++cnt[A[e++]];
+            ++rcnt[temp];
+            if(temp > mcnt) ++mcnt;
+        }
+        while(Q[i].s > s){
+            int temp = cnt[A[s++]]--;
+            if(--rcnt[temp] == 0 && temp == mcnt) --mcnt;
+        }
+        while(e > Q[i].e){
+            int temp = cnt[A[--e]]--;
+            if(--rcnt[temp] == 0 && temp == mcnt) --mcnt;
+        }
+        result[Q[i].n] = mcnt;
+    }
+    for(int i = 0; i < M; ++i)
+        printf("%d\n", result[i]);
 }
