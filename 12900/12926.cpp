@@ -2,7 +2,7 @@
 #include <utility>
 #include <algorithm>
 using namespace std;
-const int MAX_Q = 1000;
+const int MAX_Q = 100;
 const int MOD = 1000000007;
 typedef pair<int, int> P;
 
@@ -16,19 +16,19 @@ int main(){
 	while(1){
 		bool flag = false;
 		P p[MAX_Q];
-		int pcnt = 0, gcnt = 0, gVal[MAX_Q+1], gSize[MAX_Q] = {0};
+		int gcnt = 0, gVal[MAX_Q+1], gSize[MAX_Q] = {0};
 		for(int i = 0; i < Q; ++i){
 			if(lo[i]+1 < hi[i]){
 				flag = true;
-				p[pcnt++] = P((lo[i]+hi[i])/2, i);
+				p[i] = P((lo[i]+hi[i])/2, i);
 			}
 		}
 		if(!flag) break;
 
-		sort(p, p+pcnt);
+		sort(p, p+Q);
 		gVal[0] = p[0].first;
 		gSize[0] = 1;
-		for(int i = 1; i < pcnt; ++i){
+		for(int i = 1; i < Q; ++i){
 			if(p[i].first == p[i-1].first) ++gSize[gcnt];
 			else{
 				gVal[++gcnt] = p[i].first;
