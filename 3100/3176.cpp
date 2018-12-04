@@ -23,14 +23,6 @@ public:
 		for(int i = MAX_ST/2-1; i > 0; --i)
 			A[i] = func(A[i*2], A[i*2+1]);
 	}
-	void update(int n, int k){
-		n += MAX_ST/2;
-		A[n] = k;
-		while(n > 1){
-			n /= 2;
-			A[n] = func(A[n*2], A[n*2+1]);
-		}
-	}
 	int getRange(int s, int e){
 		return getRange(s, e, 1, 0, MAX_ST/2);
 	}
@@ -64,7 +56,8 @@ public:
 		parent[0] = -1;
 		dfs2(0);
 
-		ST = SegTree(-INF, [](int a, int b){ return max(a, b); });
+		ST1 = SegTree(INF, [](int a, int b){ return min(a, b); });
+		ST2 = SegTree(-INF, [](int a, int b){ return max(a, b); });
 		for(int curr = 0; curr < N; ++curr){
 			int u = dfsn[curr];
 			for(auto &e: adj[curr]){
@@ -73,38 +66,38 @@ public:
 				int v = dfsn[next];
 				if(depth[u] < depth[v]){ // avoid processing twice
 					eVertex[en] = v;
-					ST.A[MAX_ST/2 + v] = d;
+					ST1.A[MAX_ST/2 + v] = ST2.A[MAX_ST/2 + v] = d;
 				}
 			}
 		}
-		ST.construct();
+		ST1.construct();
+		ST2.construct();
 	}
 
-	void update(int e, int k){
-		ST.update(eVertex[e], k);
-	}
-
-	int getMax(int u, int v){
-		int result = -INF;
+	void query(int u, int v){
+		int r1 = INF, r2 = -INF;
 		u = dfsn[u];
 		v = dfsn[v];
 		if(cn[u] != cn[v]){
 			while(1){
 				int uHead = cHead[cn[u]], vHead = cHead[cn[v]], uTail = cTail[cn[u]], vTail = cTail[cn[v]];
 				if(depth[uHead] > depth[vHead]){
-					result = max(ST.getRange(uHead, min(uTail, u)+1), result);
+					r1 = min(ST1.getRange(uHead, min(uTail, u)+1), r1);
+					r2 = max(ST2.getRange(uHead, min(uTail, u)+1), r2);
 					u = parent[uHead];
 					if(cn[u] == cn[v]) break;
 				}
 				else{
-					result = max(ST.getRange(vHead, min(vTail, v)+1), result);
+					r1 = min(ST1.getRange(vHead, min(vTail, v)+1), r1);
+					r2 = max(ST2.getRange(vHead, min(vTail, v)+1), r2);
 					v = parent[vHead];
 					if(cn[u] == cn[v]) break;
 				}
 			}
 		}
-		result = max(ST.getRange(min(u, v)+1, max(u, v)+1), result);
-		return result;
+		r1 = min(ST1.getRange(min(u, v)+1, max(u, v)+1), r1);
+		r2 = max(ST2.getRange(min(u, v)+1, max(u, v)+1), r2);
+		printf("%d %d\n", r1, r2);
 	}
 
 private:
@@ -118,7 +111,7 @@ private:
 	int eVertex[MAX];
 	// for chain numbers
 	int C, cHead[MAX], cTail[MAX];
-	SegTree ST;
+	SegTree ST1, ST2;
 
 	void dfs1(int curr, int prev = -1, int currDepth = 0){
 		tSize[curr] = 1;
@@ -168,9 +161,8 @@ int main(){
 	HLD.initialize();
 	scanf("%d", &Q);
 	for(int i = 0; i < Q; ++i){
-		int a, b, c;
-		scanf("%d %d %d", &a, &b, &c);
-		if(a == 1) HLD.update(b, c);
-		else printf("%d\n", HLD.getMax(b-1, c-1));
+		int a, b;
+		scanf("%d %d", &a, &b);
+		HLD.query(a-1, b-1);
 	}
 }

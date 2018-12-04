@@ -1,48 +1,12 @@
 #include <cstdio>
 #include <vector>
+#include <utility>
 #include <tuple>
 #include <algorithm>
-#include <functional>
 using namespace std;
 const int MAX = 100000;
-const int MAX_ST = 1<<18;
-const int INF = 1e9;
+typedef pair<int, int> P;
 typedef tuple<int, int, int> Edge;
-typedef function<int(int, int)> STFunction;
-
-class SegTree{
-public:
-	int A[MAX_ST], defVal;
-	STFunction func;
-
-	SegTree(): SegTree(0, [](int a, int b){ return a+b; }){}
-	SegTree(int defVal1, STFunction func1): defVal(defVal1), func(func1){
-		fill(A, A+MAX_ST, defVal);
-	}
-	void construct(){
-		for(int i = MAX_ST/2-1; i > 0; --i)
-			A[i] = func(A[i*2], A[i*2+1]);
-	}
-	void update(int n, int k){
-		n += MAX_ST/2;
-		A[n] = k;
-		while(n > 1){
-			n /= 2;
-			A[n] = func(A[n*2], A[n*2+1]);
-		}
-	}
-	int getRange(int s, int e){
-		return getRange(s, e, 1, 0, MAX_ST/2);
-	}
-
-private:
-	int getRange(int s, int e, int node, int ns, int ne){
-		if(e <= ns || ne <= s) return defVal;
-		if(s <= ns && ne <= e) return A[node];
-		int mid = (ns+ne)/2;
-		return func(getRange(s, e, node*2, ns, mid), getRange(s, e, node*2+1, mid, ne));
-	}
-};
 
 class HeavyLightDecomposition{
 public:
@@ -64,7 +28,8 @@ public:
 		parent[0] = -1;
 		dfs2(0);
 
-		ST = SegTree(-INF, [](int a, int b){ return max(a, b); });
+		fill(val, val+MAX, 0);
+		fill(pSum, pSum+MAX+1, 0);
 		for(int curr = 0; curr < N; ++curr){
 			int u = dfsn[curr];
 			for(auto &e: adj[curr]){
@@ -73,38 +38,70 @@ public:
 				int v = dfsn[next];
 				if(depth[u] < depth[v]){ // avoid processing twice
 					eVertex[en] = v;
-					ST.A[MAX_ST/2 + v] = d;
+					val[v] = d;
 				}
 			}
 		}
-		ST.construct();
+		for(int i = 1; i < N; ++i)
+			pSum[i+1] = pSum[i] + val[i];
 	}
 
-	void update(int e, int k){
-		ST.update(eVertex[e], k);
-	}
-
-	int getMax(int u, int v){
-		int result = -INF;
+	long long getDistance(int u, int v){
+		long long result = 0;
 		u = dfsn[u];
 		v = dfsn[v];
 		if(cn[u] != cn[v]){
 			while(1){
 				int uHead = cHead[cn[u]], vHead = cHead[cn[v]], uTail = cTail[cn[u]], vTail = cTail[cn[v]];
 				if(depth[uHead] > depth[vHead]){
-					result = max(ST.getRange(uHead, min(uTail, u)+1), result);
+					result += pSum[min(uTail, u)+1] - pSum[uHead];
 					u = parent[uHead];
-					if(cn[u] == cn[v]) break;
 				}
 				else{
-					result = max(ST.getRange(vHead, min(vTail, v)+1), result);
+					result += pSum[min(vTail, v)+1] - pSum[vHead];
 					v = parent[vHead];
-					if(cn[u] == cn[v]) break;
 				}
+				if(cn[u] == cn[v]) break;
 			}
 		}
-		result = max(ST.getRange(min(u, v)+1, max(u, v)+1), result);
+		result += pSum[max(u, v)+1] - pSum[min(u, v)+1];
 		return result;
+	}
+
+	int getKth(int u, int v, int k){
+		vector<P> uPath, vPath;
+		u = dfsn[u];
+		v = dfsn[v];
+		if(cn[u] != cn[v]){
+			while(1){
+				int uHead = cHead[cn[u]], vHead = cHead[cn[v]], uTail = cTail[cn[u]], vTail = cTail[cn[v]];
+				if(depth[uHead] > depth[vHead]){
+					uPath.push_back(P(uHead, min(uTail, u)+1));
+					u = parent[uHead];
+				}
+				else{
+					vPath.push_back(P(vHead, min(vTail, v)+1));
+					v = parent[vHead];
+				}
+				if(cn[u] == cn[v]) break;
+			}
+		}
+		if(u == v) uPath.push_back(P(u, u+1));
+		else if(u > v) uPath.push_back(P(v, u+1));
+		else vPath.push_back(P(u, v+1));
+		reverse(vPath.begin(), vPath.end());
+
+		for(auto &p: uPath){
+			int pSize = p.second - p.first;
+			if(k < pSize) return d2vn[p.first + pSize-k-1]+1;
+			k -= pSize;
+		}
+		for(auto &p: vPath){
+			int pSize = p.second - p.first;
+			if(k < pSize) return d2vn[p.first + k]+1;
+			k -= pSize;
+		}
+		return -1; // dummy
 	}
 
 private:
@@ -113,12 +110,12 @@ private:
 	vector<Edge> adj[MAX];
 	vector<int> child[MAX];
 	// for dfsn numbers
-	int parent[MAX], depth[MAX], cn[MAX];
+	int parent[MAX], d2vn[MAX], depth[MAX], cn[MAX], val[MAX];
+	long long pSum[MAX+1];
 	// edge number to deeper dfsn number
 	int eVertex[MAX];
 	// for chain numbers
 	int C, cHead[MAX], cTail[MAX];
-	SegTree ST;
 
 	void dfs1(int curr, int prev = -1, int currDepth = 0){
 		tSize[curr] = 1;
@@ -136,6 +133,7 @@ private:
 	// from now, vertice numbers are replaced with dfsn[.]
 	void dfs2(int curr, int prev = -1, int currDepth = 0){
 		int u = dfsn[curr] = dcnt++;
+		d2vn[u] = curr;
 		cn[u] = C;
 		depth[u] = currDepth;
 		if(cHead[C] < 0) cHead[C] = u;
@@ -168,9 +166,12 @@ int main(){
 	HLD.initialize();
 	scanf("%d", &Q);
 	for(int i = 0; i < Q; ++i){
-		int a, b, c;
+		int a, b, c, d;
 		scanf("%d %d %d", &a, &b, &c);
-		if(a == 1) HLD.update(b, c);
-		else printf("%d\n", HLD.getMax(b-1, c-1));
+		if(a == 1) printf("%lld\n", HLD.getDistance(b-1, c-1));
+		else{
+			scanf("%d", &d);
+			printf("%d\n", HLD.getKth(b-1, c-1, d-1));
+		}
 	}
 }
