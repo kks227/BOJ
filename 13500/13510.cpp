@@ -120,13 +120,13 @@ private:
 	int C, cHead[MAX], cTail[MAX];
 	SegTree ST;
 
-	void dfs1(int curr, int prev = -1, int currDepth = 0){
+	void dfs1(int curr, int prev = -1){
 		tSize[curr] = 1;
 		for(auto &p: adj[curr]){
 			int next, d, en;
 			tie(next, d, en) = p;
 			if(next != prev){
-				dfs1(next, curr, currDepth+1);
+				dfs1(next, curr);
 				child[curr].push_back(next);
 				tSize[curr] += tSize[next];
 			}
