@@ -12,19 +12,17 @@ int gcd(int m, int n){
 }
 
 int main(){
-
-	int T, N, val[100], result;
+	int T;
 	scanf("%d", &T);
-	for(int t=0; t<T; t++){
+	for(int t = 0; t < T; ++t){
+		int N, val[100];
 		scanf("%d", &N);
-		for(int i=0; i<N; i++)
+		for(int i = 0; i < N; ++i)
 			scanf("%d", val+i);
-		result = 0;
-		for(int i=0; i<N; i++)
-			for(int j=0; j<i; j++)
+		long long result = 0;
+		for(int i = 0; i < N; ++i)
+			for(int j = 0; j < i; ++j)
 				result += gcd(val[i], val[j]);
-		printf("%d\n", result);
+		printf("%lld\n", result);
 	}
-
-	return 0;
 }
