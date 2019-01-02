@@ -5,7 +5,7 @@
 #include <utility>
 #include <algorithm>
 using namespace std;
-const int MAX = 200000;
+const int MAX = 30000;
 const long long INF = 1e18;
 typedef pair<int, int> IVector;
 
@@ -42,15 +42,19 @@ const IVector operator -(const Point& A, const Point& B){
 	return IVector(A.x-B.x, A.y-B.y);
 }
 
-class ConvexHull{
+class DynamicConvexHull{
 public:
-	void input(){
-		scanf("%d", &N);
+	int input(){
+		scanf("%d %d", &N, &T);
 		for(int i = 0; i < N; ++i)
-			scanf("%d %d", &p[i].x, &p[i].y);
+			scanf("%d %d %d %d", x0+i, y0+i, dx+i, dy+i);
+		return T;
 	}
 
-	void output(){
+	long long getLongest(int t){
+		Point p[MAX];
+		for(int i = 0; i < N; ++i)
+			p[i] = Point(x0[i] + dx[i]*t, y0[i] + dy[i]*t);
 		sort(p, p+N);
 		for(int i = 1; i < N; ++i){
 			p[i].p = p[i].x - p[0].x;
@@ -88,9 +92,8 @@ public:
 
 		int hSize = hull.size();
 		long long result = d2(p[hull[pCurr]], p[hull[qCurr]]);
-		int r1 = pCurr, r2 = qCurr;
 		IVector pivotVec(-1, 0);
-		for(int i = 0; i < hSize; ++i){
+		for(int i = 0; i < hSize*2; ++i){
 			int pNext = (pCurr+hSize-1) % hSize;
 			int qNext = (qCurr+hSize-1) % hSize;
 			IVector pVec = p[hull[pNext]] - p[hull[pCurr]];
@@ -103,31 +106,36 @@ public:
 				pivotVec = -qVec;
 				qCurr = qNext;
 			}
-
-			long long d = d2(p[hull[pCurr]], p[hull[qCurr]]);
-			if(result < d){
-				result = d;
-				r1 = pCurr;
-				r2 = qCurr;
-			}
+			result = max(d2(p[hull[pCurr]], p[hull[qCurr]]), result);
 		}
 
-		printf("%d %d %d %d\n", p[hull[r1]].x, p[hull[r1]].y, p[hull[r2]].x, p[hull[r2]].y);
+		return result;
 	}
 
 private:
-	int N;
-	Point p[MAX];
+	int N, T, x0[MAX], y0[MAX], dx[MAX], dy[MAX];
 };
 
 
 
 int main(){
-	int T;
-	scanf("%d", &T);
-	for(int t = 0; t < T; ++t){
-		ConvexHull CH;
-		CH.input();
-		CH.output();
+	DynamicConvexHull Solver;
+	int T = Solver.input();
+	int lo = 0, hi = T;
+	while(hi-lo >= 3){
+		int p = (lo*2 + hi)/3, q = (lo + hi*2)/3;
+		long long pVal = Solver.getLongest(p), qVal = Solver.getLongest(q);
+		if(pVal <= qVal) hi = q;
+		else lo = p;
 	}
+	int res1 = -1;
+	long long res2 = INF;
+	for(int i = lo; i <= hi; ++i){
+		long long temp = Solver.getLongest(i);
+		if(res2 > temp){
+			res1 = i;
+			res2 = temp;
+		}
+	}
+	printf("%d\n%lld\n", res1, res2);
 }
