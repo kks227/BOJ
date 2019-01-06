@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cmath>
 #include <algorithm>
 using namespace std;
 
@@ -16,5 +17,5 @@ int main(){
 		}
 		sum += min(temp, 100);
 	}
-	printf("%.0lf\n", sum*1.0/N);
+	printf("%.0lf\n", round(sum*1.0/N));
 }
