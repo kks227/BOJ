@@ -27,7 +27,7 @@ struct BCCNode{
 class BlockCutTree{
 public:
 	int V, E, C, vcNum[MAX_V];
-	vector<P> adj[MAX_V];
+	vector<int> adj[MAX_V];
 	Edge edge[MAX_E];
 	map<P, int> eNum;
 	BCCNode cn[MAX];
@@ -39,8 +39,8 @@ public:
 			scanf("%d %d", &u, &v);
 			edge[i] = Edge(--u, --v, -1);
 			eNum[P(u, v)] = eNum[P(v, u)] = i;
-			adj[u].push_back(P(v, i));
-			adj[v].push_back(P(u, i));
+			adj[u].push_back(v);
+			adj[v].push_back(u);
 		}
 	}
 
@@ -54,8 +54,8 @@ public:
 
 		for(int u: ap){
 			cn[C] = BCCNode(u);
-			for(auto e: adj[u]){
-				int X = get<2>(edge[e.second]);
+			for(auto v: adj[u]){
+				int X = get<2>(edge[eNum[P(u, v)]]);
 				cn[C].adj.push_back(X);
 				cn[X].adj.push_back(C);
 			}
@@ -105,10 +105,10 @@ private:
 
 	int getBCC(int curr, int prev = -1){
 		int result = dfsn[curr] = dcnt++;
-		for(auto &e: adj[curr]){
-			int next = e.first, en = e.second;
+		for(int next: adj[curr]){
 			if(next == prev) continue;
 
+			int en = eNum[P(curr, next)];
 			if(dfsn[curr] > dfsn[next]) S.push(en);
 			if(dfsn[next] >= 0) result = min(result, dfsn[next]);
 			else{
