@@ -7,14 +7,15 @@
 #include <unordered_map>
 #include <algorithm>
 using namespace std;
-const int MAX_V = 100000;
+const int MAX_V = 200000;
 const int MAX_E = 500000;
-const int MAX_D = 19;
+const int MAX_D = 20;
 const int MAX = MAX_V * 2;
 typedef pair<int, int> Edge;
 
 struct BCCNode{
     bool isPoint, isCut;
+    unordered_set<int> member;
     vector<int> adj;
     BCCNode(): BCCNode(false){}
     BCCNode(bool flag): isPoint(flag), isCut(false){}
@@ -65,34 +66,26 @@ public:
         }
     }
 
-    bool query1(int u, int v, int a, int b){
-        int e = ecNum[adj[a][b]];
-        if(!cn[e].isCut) return true;
+    int query(int u, int v){
         u = vcNum[u];
         v = vcNum[v];
-        if(u == v) return true;
+        if(cDepth[u] < cDepth[v]) swap(u, v);
+        if(!cn[u].isPoint && !cn[v].isPoint) return V;
 
         int w = getLCA(u, v);
-        if(e == w) return false;
-        if(getLCA(w, e) == e) return true;
-        return (getLCA(u, e) != e && getLCA(v, e) != e);
-    }
-
-    bool query2(int u, int v, int a){
-        u = vcNum[u];
-        v = vcNum[v];
-        a = vcNum[a];
-        if(!cn[a].isPoint) return true;
-        if(u == v) return true;
-
-        int w = getLCA(u, v);
-        if(a == w) return false;
-        if(getLCA(w, a) == a) return true;
-        return (getLCA(u, a) != a && getLCA(v, a) != a);
+        if(cn[w].isPoint && w == v){
+            int diff = cDepth[u] - cDepth[v] - 1, x = u;
+            for(int i = 0; diff > 0; ++i){
+                if(diff % 2) x = cParent[x][i];
+                diff /= 2;
+            }
+            return cSize[x] - (cn[u].isPoint ? cSize[u] - 1 : 0);
+        }
+        return V - (cn[u].isPoint ? cSize[u] - 1 : 0) - (cn[v].isPoint ? cSize[v] - 1 : 0);
     }
 
 private:
-    int dcnt, dfsn[MAX], cParent[MAX][MAX_D], cDepth[MAX];
+    int dcnt, dfsn[MAX], cParent[MAX][MAX_D], cDepth[MAX], cSize[MAX];
     stack<Edge> S;
 
     int getBCC(int curr, int prev = -1){
@@ -108,17 +101,16 @@ private:
                 result = min(result, temp);
                 if(temp >= dfsn[curr]){
                     cn[C] = BCCNode();
-                    int cnt = 0;
                     while(!S.empty()){
                         int u = S.top().first, v = S.top().second;
                         S.pop();
                         ecNum[adj[u][v]] = C;
+                        cn[C].member.insert(u);
+                        cn[C].member.insert(v);
                         vcNum[u] = vcNum[v] = C;
-                        ++cnt;
                         if(curr == u && next == v) break;
                     }
                     ap.insert(curr);
-                    if(cnt == 1) cn[C].isCut = true;
                     ++C;
                 }
             }
@@ -128,10 +120,12 @@ private:
 
     void makeTreeByDFS(int depth, int curr){
         cDepth[curr] = depth;
+        cSize[curr] = (cn[curr].isPoint ? 1 : cn[curr].member.size());
         for(int next: cn[curr].adj){
             if(cDepth[next] >= 0) continue;
             cParent[next][0] = curr;
             makeTreeByDFS(depth+1, next);
+            cSize[curr] += cSize[next] - 1;
         }
     }
 
@@ -159,20 +153,18 @@ private:
 
 
 int main(){
-    BlockCutTree BCT;
-    BCT.input();
-    BCT.construct();
-    int Q;
-    scanf("%d", &Q);
-    for(int i = 0; i < Q; ++i){
-        int o, u, v, a, b;
-        bool result;
-        scanf("%d %d %d %d", &o, &u, &v, &a);
-        if(o == 1){
-            scanf("%d", &b);
-            result = BCT.query1(u-1, v-1, a-1, b-1);
+    int T;
+    scanf("%d", &T);
+    for(int t = 0; t < T; ++t){
+        BlockCutTree BCT;
+        BCT.input();
+        BCT.construct();
+        int Q;
+        scanf("%d", &Q);
+        for(int i = 0; i < Q; ++i){
+            int u, v;
+            scanf("%d %d", &u, &v);
+            printf("%d\n", BCT.query(u-1, v-1));
         }
-        else result = BCT.query2(u-1, v-1, a-1);
-        puts(result ? "yes" : "no");
     }
 }
