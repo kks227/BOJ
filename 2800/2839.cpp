@@ -1,16 +1,13 @@
-#include <iostream>
+#include <cstdio>
+#include <algorithm>
 using namespace std;
 
 int main(){
-
-	int N;
-	cin >> N;
-	if(N==4 || N==7 || N==8) cout << -1 << endl;
-	else{
-		int cnt = 0;
-		while((N-cnt*3)%5 != 0) cnt++;
-		cout << cnt + (N-cnt*3)/5 << endl;
-	}
-
-	return 0;
+    int N;
+    scanf("%d", &N);
+    int result = N+1;
+    for(int i = 0; i*3 <= N; ++i)
+        if((N-i*3)%5 == 0) result = min(i + (N-i*3)/5, result);
+    if(result == N+1) result = -1;
+    printf("%d\n", result);
 }
