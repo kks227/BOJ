@@ -2,7 +2,7 @@
 #include <cmath>
 #include <algorithm>
 using namespace std;
-const int XN = 1000000;
+const int XN = 50000;
 
 inline double f(double a, double b, double x){ return a*exp(-x*x) + b*sqrt(x); }
 
