@@ -1,0 +1,113 @@
+#include <cstdio>
+#include <cstring>
+#include <vector>
+#include <queue>
+#include <algorithm>
+using namespace std;
+const int MAX_N = 50;
+const int MAX = MAX_N+2;
+const int S = MAX-2;
+const int E = MAX-1;
+const int INF = 1e9;
+
+struct Edge{
+	int to, c, d, f;
+	Edge *dual;
+	Edge(): Edge(-1, 0, 0){}
+	Edge(int to1, int c1, int d1): to(to1), c(c1), d(d1), f(0), dual(nullptr){}
+	int spare(){ return c-f; }
+	void addFlow(int f1){
+		f += f1;
+		dual->f -= f1;
+	}
+};
+
+class Train{
+public:
+	Train(){}
+	~Train(){
+		for(Edge* e: edge)
+			delete e;
+	}
+
+	void input(){
+		int N, P, A[MAX_N][MAX_N], C[MAX_N][MAX_N];
+		scanf("%d %d", &N, &P);
+		for(int i = 0; i < N-1; ++i)
+			for(int j = i+1; j < N; ++j)
+				scanf("%d", &A[i][j]);
+		for(int i = 0; i < N-1; ++i){
+			for(int j = i+1; j < N; ++j){
+				scanf("%d", &C[i][j]);
+				addEdge(i, j, A[i][j], -C[i][j]);
+			}
+			addEdge(i, i+1, INF, 0);
+		}
+		addEdge(S, 0, P, 0);
+		addEdge(N-1, E, P, 0);
+	}
+
+	int solve(){
+		int total = 0, cost = 0;
+		while(1){
+			bool inQ[MAX] = {false,};
+			Edge *prev[MAX];
+			int dist[MAX];
+			fill(prev, prev+MAX, nullptr);
+			fill(dist, dist+MAX, INF);
+			queue<int> Q;
+			Q.push(S);
+			inQ[S] = true;
+			dist[Q.front()] = 0;
+
+			while(!Q.empty()){
+				int curr = Q.front();
+				Q.pop();
+				inQ[curr] = false;
+				for(Edge *e: adj[curr]){
+					int next = e->to;
+					if(e->spare() > 0 && dist[next] > dist[curr] + e->d){
+						dist[next] = dist[curr] + e->d;
+						prev[next] = e->dual;
+						if(!inQ[next]){
+							Q.push(next);
+							inQ[next] = true;
+						}
+					}
+				}
+			}
+			if(!prev[E]) break;
+
+			int temp = INF;
+			for(int i = E; i != S; i = prev[i]->to)
+				temp = min(prev[i]->dual->spare(), temp);
+			total += temp;
+			for(int i = E; i != S; i = prev[i]->to){
+				cost += -prev[i]->d * temp;
+				prev[i]->addFlow(-temp);
+			}
+		}
+
+		return -cost;
+	}
+
+private:
+	vector<Edge*> adj[MAX];
+	vector<Edge*> edge;
+
+	void addEdge(int u, int v, int c1, int d1){
+		Edge *e1 = new Edge(v, c1, d1), *e2 = new Edge(u, 0, -d1);
+		e1->dual = e2;
+		e2->dual = e1;
+		adj[u].push_back(e1);
+		adj[v].push_back(e2);
+		edge.push_back(e1);
+		edge.push_back(e2);
+	}
+};
+
+int main(){
+	Train solver;
+	solver.input();
+	printf("%d\n", solver.solve());
+}
