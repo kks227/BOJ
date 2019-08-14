@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cmath>
 using namespace std;
 const int MAX = 100;
 
@@ -12,5 +13,5 @@ int main(){
         q[i][0] = q[i-1][0]*p[0][0] + q[i-1][1]*p[1][0];
         q[i][1] = q[i-1][0]*p[0][1] + q[i-1][1]*p[1][1];
     }
-    printf("%.0lf\n%.0lf\n", q[N][0]*1000, q[N][1]*1000);
+    printf("%.0lf\n%.0lf\n", round(q[N][0]*1000), round(q[N][1]*1000));
 }
