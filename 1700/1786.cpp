@@ -2,36 +2,32 @@
 #include <cstring>
 #include <vector>
 using namespace std;
+const int MAX = 1000000;
+const int MAX_T = 1000000;
 
 int main(){
-	char T[1000001], P[1000001];
+	char S[MAX+1], T[MAX_T+1];
+	gets(S);
 	gets(T);
-	gets(P);
-	int N = strlen(T), M = strlen(P);
-	if(N < M){
-		puts("0");
-		return 0;
-	}
+	int N = strlen(S), M = strlen(T);
 
-	int pi[1000000] = {0}, j = 0;
-	for(int i=1; i<M; i++){
-		while(j > 0 && P[i] != P[j]) j = pi[j-1];
-		if(P[i] == P[j]) pi[i] = ++j;
+	int p[MAX_T] = {0};
+	for(int i = 1, j = 0; i < M; ++i){
+		while(j > 0 && T[i] != T[j]) j = p[j-1];
+		if(T[i] == T[j]) p[i] = ++j;
 	}
-
 	vector<int> result;
-	j = 0;
-	for(int i=0; i<N; i++){
-		while(j > 0 && T[i] != P[j]) j = pi[j-1];
-		if(T[i] == P[j]){
+	for(int i = 0, j = 0; i < N; ++i){
+		while(j > 0 && S[i] != T[j]) j = p[j-1];
+		if(S[i] == T[j]){
 			if(j == M-1){
 				result.push_back(i-M+2);
-				j = pi[j];
+				j = p[j];
 			}
 			else j++;
 		}
 	}
 	printf("%d\n", result.size());
-	for(int val: result)
-		printf("%d ", val);
+	for(int i: result)
+		printf("%d ", i);
 }
