@@ -8,46 +8,45 @@ const int MAX = 500000;
 const double PI = acos(-1);
 typedef complex<double> cpx;
 
-void FFT(vector<cpx> &f, cpx w){
+void FFT(vector<cpx> &f, bool inv = false){
 	int n = f.size();
-	if(n == 1) return;
-
-	vector<cpx> even(n/2), odd(n/2);
-	for(int i = 0; i < n; ++i)
-		(i%2 ? odd : even)[i/2] = f[i];
-
-	FFT(even, w*w);
-	FFT(odd, w*w);
-
-	cpx wp(1, 0);
-	for(int i = 0; i < n/2; ++i){
-		f[i] = even[i] + wp*odd[i];
-		f[i + n/2] = even[i] - wp*odd[i];
-		wp *= w;
+	for(int i = 1, j = 0; i < n; ++i){
+		int b = n/2;
+		while(!((j ^= b) & b)) b /= 2;
+		if(i < j) swap(f[i], f[j]);
+	}
+	for(int k = 1; k < n; k *= 2){
+		double a = (inv ? PI/k : -PI/k);
+		cpx w(cos(a), sin(a));
+		for(int i = 0; i < n; i += k*2){
+			cpx wp(1, 0);
+			for(int j = 0; j < k; ++j){
+				cpx x = f[i+j], y = f[i+j+k] * wp;
+				f[i+j] = x + y;
+				f[i+j+k] = x - y;
+				wp *= w;
+			}
+		}
+	}
+	if(inv){
+		for(int i = 0; i < n; ++i)
+			f[i] /= n;
 	}
 }
 
-vector<cpx> multiply(vector<cpx> a, vector<cpx> b){
+void multiply(vector<cpx> a, vector<cpx> b, vector<cpx> &c){
 	int n = 1;
 	while(n < a.size()+1 || n < b.size()+1) n *= 2;
 	n *= 2;
 	a.resize(n);
 	b.resize(n);
-	vector<cpx> c(n);
+	c.resize(n);
 
-	cpx w(cos(2*PI/n), sin(2*PI/n));
-	FFT(a, w);
-	FFT(b, w);
-
+	FFT(a);
+	FFT(b);
 	for(int i = 0; i < n; ++i)
 		c[i] = a[i]*b[i];
-
-	FFT(c, cpx(1, 0)/w);
-	for(int i = 0; i < n; ++i){
-		c[i] /= cpx(n, 0);
-		c[i] = cpx(round(c[i].real()), round(c[i].imag()));
-	}
-	return c;
+	FFT(c, true);
 }
 
 
@@ -59,14 +58,14 @@ int main(){
 		++cnt1[1LL*i*i % N];
 		++cnt2[2LL*i*i % N];
 	}
-	vector<cpx> A(N);
+	vector<cpx> A(N), B;
 	for(int i = 0; i < N; ++i)
 		A[i] = cpx(cnt1[i], 0);
-	vector<cpx> B = multiply(A, A);
+	multiply(A, A, B);
 
 	long long r1 = 0, r2 = 0;
 	for(int i = 0; i < B.size(); ++i)
-		r1 += cnt1[i%N] * (long long)B[i].real();
+		r1 += cnt1[i%N] * (long long)round(B[i].real());
 	for(int i = 0; i < N; ++i)
 		r2 += 1LL*cnt1[i] * cnt2[i];
 	printf("%lld\n", (r1-r2)/2+r2);

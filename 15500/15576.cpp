@@ -1,103 +1,86 @@
 #include <cstdio>
-#include <cstring>
 #include <cmath>
 #include <vector>
 #include <complex>
 #include <algorithm>
 using namespace std;
-const int MAX = 1<<19;
-const double PI = 3.14159265358979323846264;
+const double PI = acos(-1);
 typedef complex<double> cpx;
 
-cpx b[MAX];
-
-void FFT(cpx *a, int n, bool dft=false){
-	if(n == 1) return;
-
-	memcpy(b, a, sizeof(cpx)*n);
-	for(int i=0; i<n; i++)
-		a[i/2 + (i%2?n/2:0)] = b[i];
-	cpx w(cos(2*PI/n), sin(2*PI/n));
-	if(dft) w = cpx(1, 0)/w;
-	FFT(a, n/2, dft);
-	FFT(a+n/2, n/2, dft);
-
-	cpx wp(1, 0);
-	memcpy(b, a, sizeof(cpx)*n);
-	for(int i=0; i<n/2; i++){
-		a[i] = b[i] + wp*b[i+n/2];
-		a[i+n/2] = b[i] - wp*b[i+n/2];
-		wp *= w;
+void FFT(vector<cpx> &f, bool inv = false){
+	int n = f.size();
+	for(int i = 1, j = 0; i < n; ++i){
+		int b = n/2;
+		while(!((j ^= b) & b)) b /= 2;
+		if(i < j) swap(f[i], f[j]);
+	}
+	for(int k = 1; k < n; k *= 2){
+		double a = (inv ? PI/k : -PI/k);
+		cpx w(cos(a), sin(a));
+		for(int i = 0; i < n; i += k*2){
+			cpx wp(1, 0);
+			for(int j = 0; j < k; ++j){
+				cpx x = f[i+j], y = f[i+j+k] * wp;
+				f[i+j] = x + y;
+				f[i+j+k] = x - y;
+				wp *= w;
+			}
+		}
+	}
+	if(inv){
+		for(int i = 0; i < n; ++i)
+			f[i] /= n;
 	}
 }
 
-int multiply(cpx *p, cpx *q, int pl, int ql, cpx *r){
+void multiply(vector<cpx> a, vector<cpx> b, vector<cpx> &c){
 	int n = 1;
-	while(n < pl+1 || n < ql+1) n *= 2;
+	while(n < a.size()+1 || n < b.size()+1) n *= 2;
 	n *= 2;
-	FFT(p, n);
-	FFT(q, n);
+	a.resize(n);
+	b.resize(n);
+	c.resize(n);
 
-	for(int i=0; i<n; i++)
-		r[i] = p[i]*q[i];
-	FFT(r, n, true);
-	for(int i=0; i<n; i++){
-		r[i] /= cpx(n, 0);
-		r[i] = cpx(round(r[i].real()), round(r[i].imag()));
-	}
-	return n;
+	FFT(a);
+	FFT(b);
+	for(int i = 0; i < n; ++i)
+		c[i] = a[i]*b[i];
+	FFT(c, true);
 }
+
+
 
 int main(){
-	char Ain[MAX]={0}, Bin[MAX]={0};
-	cpx A[MAX], B[MAX], C[MAX];
-	int Acnt=0, Bcnt=0, Alen=0, Blen=0, Clen;
+	vector<cpx> A, B, C;
 	while(1){
 		char c = getchar();
 		if(c == ' ') break;
-		Ain[Acnt++] = c-'0';
-	}
-	if(Acnt%2){
-		for(int i=(Acnt-1)/2, j=0; i>0; i--)
-			A[Alen++] = Ain[i*2-1]*10 + Ain[i*2];
-		A[Alen++] = Ain[0];
-	}
-	else{
-		for(int i=(Acnt-1)/2; i>=0; i--)
-			A[Alen++] = Ain[i*2]*10 + Ain[i*2+1];
+		A.push_back(cpx(c-'0', 0));
 	}
 	while(1){
 		char c = getchar();
 		if(c == '\n') break;
-		Bin[Bcnt++] = c-'0';
+		B.push_back(cpx(c-'0', 0));
 	}
-	if(Bcnt%2){
-		for(int i=(Bcnt-1)/2, j=0; i>0; i--)
-			B[Blen++] = Bin[i*2-1]*10 + Bin[i*2];
-		B[Blen++] = Bin[0];
-	}
-	else{
-		for(int i=(Bcnt-1)/2; i>=0; i--)
-			B[Blen++] = Bin[i*2]*10 + Bin[i*2+1];
-	}
-	Clen = multiply(A, B, Alen, Blen, C);
+	reverse(A.begin(), A.end());
+	reverse(B.begin(), B.end());
+	multiply(A, B, C);
 
-	int carry = 0, i, R[MAX], Rlen = 0;
-	for(i=0; i<Clen; i++){
-		int temp = (int)C[i].real() + carry;
-		R[Rlen++] = temp%10;
-		temp /= 10;
-		R[Rlen++] = temp%10;
+	int carry = 0, i;
+	vector<int> R;
+	for(i = 0; i < C.size(); ++i){
+		int temp = (int)round(C[i].real()) + carry;
+		R.push_back(temp%10);
 		carry = temp/10;
 	}
 	while(carry > 0){
-		R[Rlen++] = carry%10;
+		R.push_back(carry%10);
 		carry /= 10;
 	}
-	for(i=Rlen-1; i>=0 && R[i]==0; i--);
+	for(i = R.size()-1; i >= 0 && R[i] == 0; --i);
 	if(i < 0) puts("0");
 	else{
-		for(; i>=0; i--)
+		for(; i >= 0; --i)
 			putchar(R[i]+'0');
 	}
 }
