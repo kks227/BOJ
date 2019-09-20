@@ -1,0 +1,63 @@
+#include <cstdio>
+#include <queue>
+using namespace std;
+const int MAX = 50;
+const int roff[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
+const int coff[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
+
+int main(){
+	int T;
+	scanf("%d", &T);
+	for(int t = 1; t <= T; ++t){
+		int N, result = 0;
+		char map[MAX][MAX];
+		bool near[MAX][MAX] = {false,}, visited[MAX][MAX] = {false,};
+		scanf("%d", &N);
+		for(int i = 0; i < N; ++i){
+			getchar();
+			for(int j = 0; j < N; ++j){
+				map[i][j] = getchar();
+				if(map[i][j] == '*'){
+					for(int d = 0; d < 8; ++d){
+						int nr = i+roff[d], nc = j+coff[d];
+						if(nr < 0 || nr >= N || nc < 0 || nc >= N);
+						else near[nr][nc] = true;
+					}
+				}
+			}
+		}
+
+		for(int i = 0; i < N; ++i){
+			for(int j = 0; j < N; ++j){
+				if(map[i][j] == '*') continue;
+				else if(near[i][j]);
+				else if(!visited[i][j]){
+					visited[i][j] = true;
+					queue<int> Q;
+					Q.push(i*MAX + j);
+					while(!Q.empty()){
+						int r = Q.front()/MAX, c = Q.front()%MAX;
+						Q.pop();
+						if(near[r][c]) continue;
+
+						for(int d = 0; d < 8; ++d){
+							int nr = r+roff[d], nc = c+coff[d];
+							if(nr < 0 || nr >= N || nc < 0 || nc >= N);
+							else if(!visited[nr][nc]){
+								visited[nr][nc] = true;
+								Q.push(nr*MAX + nc);
+							}
+						}
+					}
+					++result;
+				}
+			}
+		}
+
+		for(int i = 0; i < N; ++i)
+			for(int j = 0; j < N; ++j)
+				if(near[i][j] && map[i][j] != '*' && !visited[i][j]) ++result;
+
+		printf("Case #%d: %d\n", t, result);
+	}
+}
