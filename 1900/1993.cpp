@@ -41,12 +41,12 @@ int main(){
 			scanf("%s %d", name, &d);
 			if(name[0] == '#') break;
 
-			for(int i = MAX; ; --i){
-				if(race(N+1, i) <= d){
-					printf("%s: %d\n", name, i);
-					break;
-				}
+			int lo = -1, hi = MAX;
+			while(lo+1 < hi){
+				int mid = (lo+hi)/2;
+				(race(N+1, mid) <= d ? lo : hi) = mid;
 			}
+			printf("%s: %d\n", name, lo);
 		}
 	}
 }
