@@ -1,6 +1,5 @@
 #include <cstdio>
 #include <cstring>
-#include <vector>
 #include <queue>
 #include <set>
 #include <algorithm>
@@ -17,13 +16,13 @@ public:
 			int u, v;
 			scanf("%d %d", &u, &v);
 			--u; --v;
-			adj[u].push_back(v);
-			adj[v].push_back(u);
+			adj[u].insert(v);
+			adj[v].insert(u);
 		}
 		fill(color, color+N, false);
 
 		memset(parent, -1, sizeof(parent));
-		fill(depth, depth+N, -1);
+		fill(depth, depth + N, -1);
 		depth[0] = 0;
 		queue<int> Q;
 		Q.push(0);
@@ -42,8 +41,7 @@ public:
 				if(parent[i][j] != -1)
 					parent[i][j+1] = parent[parent[i][j]][j];
 
-		fill(cParent, cParent+N, -1);
-		fill(visited, visited+N, false);
+		fill(cParent, cParent + N, -1);
 		construct(0);
 	}
 
@@ -54,7 +52,7 @@ public:
 			int d = getDist(u, v);
 			if(color[u]) S[v].insert(d);
 			else S[v].erase(S[v].find(d));
-			if(v == cParent[v]) break;
+			if(cParent[v] == -1) break;
 			v = cParent[v];
 		}
 	}
@@ -64,7 +62,7 @@ public:
 		while(1){
 			int d = getDist(u, v);
 			if(!S[v].empty()) result = min(d + *S[v].begin(), result);
-			if(v == cParent[v]) break;
+			if(cParent[v] == -1) break;
 			v = cParent[v];
 		}
 
@@ -74,18 +72,22 @@ public:
 
 private:
 	int N, parent[MAX][MAX_D], depth[MAX], tSize[MAX], cParent[MAX];
-	vector<int> adj[MAX];
-	bool visited[MAX], color[MAX];
+	set<int> adj[MAX];
+	bool color[MAX];
 	multiset<int> S[MAX];
 
 	void construct(int curr, int prev = -1){
 		int n = dfs1(curr);
 		int root = dfs2(n, curr);
-		visited[root] = true;
-		if(prev == -1) prev = root;
 		cParent[root] = prev;
-		for(int next: adj[root])
-			if(!visited[next]) construct(next, root);
+		while(!adj[root].empty()){
+			int next = *adj[root].begin();
+			if(next != prev){
+				adj[root].erase(next);
+				adj[next].erase(root);
+				construct(next, root);
+			}
+		}
 	}
 
 	int getLCA(int u, int v){
@@ -115,14 +117,13 @@ private:
 	int dfs1(int curr, int prev = -1){
 		tSize[curr] = 1;
 		for(int next: adj[curr])
-			if(next != prev && !visited[next])
-				tSize[curr] += dfs1(next, curr);
+			if(next != prev) tSize[curr] += dfs1(next, curr);
 		return tSize[curr];
 	}
 
 	int dfs2(int n, int curr, int prev = -1){
 		for(int next: adj[curr]){
-			if(next != prev && !visited[next] && tSize[next] > n/2)
+			if(next != prev && tSize[next] > n/2)
 				return dfs2(n, next, curr);
 		}
 		return curr;
