@@ -10,7 +10,7 @@ typedef pair<int, int> P;
 
 int R, C;
 char A[MAX][MAX];
-map<vector<P>, int> dp[MAX+1][MAX];
+map<vector<P>, int> dp[MAX+1][MAX+1];
 
 inline void normalize(vector<P> &v1){
 	for(auto &p: v1)
@@ -19,7 +19,6 @@ inline void normalize(vector<P> &v1){
 }
 
 int pipe(int r, int c, vector<P> status){
-	if(c == C) return pipe(r+1, 0, status);
 	normalize(status);
 	if(dp[r][c].find(status) != dp[r][c].end()) return dp[r][c][status];
 	int &ret = dp[r][c][status] = 0;
@@ -47,7 +46,10 @@ int pipe(int r, int c, vector<P> status){
 			lIndex = i;
 		}
 	}
-
+	if(c == C){
+		if(lFlag) return ret = 0;
+		return ret = pipe(r+1, 0, status);
+	}
 	if(A[r][c] == '#'){
 		if(uFlag || lFlag) return ret = 0;
 		return ret = pipe(r, c+1, status);
@@ -56,14 +58,12 @@ int pipe(int r, int c, vector<P> status){
 	if(!uFlag){
 		if(!lFlag){
 			ret += pipe(r, c+1, status);
-			if(c < C-1){
-				vector<P> v1(status);
-				v1.push_back(P(c, C));
-				ret += pipe(r, c+1, v1);
-			}
+			vector<P> v1(status);
+			v1.push_back(P(c, C));
+			ret += pipe(r, c+1, v1);
 		}
 		else{
-			if(c < C-1) ret += pipe(r, c+1, status);
+			ret += pipe(r, c+1, status);
 			vector<P> v1(status);
 			v1[lIndex].second = c;
 			ret += pipe(r, c+1, v1);
@@ -72,11 +72,9 @@ int pipe(int r, int c, vector<P> status){
 	else{
 		if(!lFlag){
 			ret += pipe(r, c+1, status);
-			if(c < C-1){
-				vector<P> v1(status);
-				(uPairPos ? v1[uIndex].second : v1[uIndex].first) = C;
-				ret += pipe(r, c+1, v1);
-			}
+			vector<P> v1(status);
+			(uPairPos ? v1[uIndex].second : v1[uIndex].first) = C;
+			ret += pipe(r, c+1, v1);
 		}
 		else{
 			if(uIndex != lIndex){
